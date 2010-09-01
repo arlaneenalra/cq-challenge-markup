@@ -15,9 +15,24 @@ no lib '.';
 binmode STDIN, ':encoding(utf8)';
 binmode STDOUT, ':encoding(utf8)';
 
+=head1 NAME
 
-=pod
-=head1 USAGE
+markup.pl - Tool to convert text written using Markup into a simple 
+xml document.
+
+=head1 SYNOPSIS
+
+markup.pl [filename]
+
+If no filename is provided, markup.pl will expect to receive input via stdin 
+and send output to stdout.
+
+=over
+
+cat test.txt | markup.pl
+
+=back
+
 
 =cut
 
@@ -25,7 +40,6 @@ binmode STDOUT, ':encoding(utf8)';
 # looking for a stream?
 my $source= @ARGV ? &slurp($ARGV[0]) : &slurp(\*STDIN);
 
-print $source;
 
 =head1 UTILITY FUNCTIONS
 
