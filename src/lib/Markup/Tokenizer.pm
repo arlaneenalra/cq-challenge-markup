@@ -50,10 +50,6 @@ which can then be used to provide structure to our content.
 sub tokenize {
     my ($self, $content)=@_;
     
-    # Convert tabs into spaces
-    $content=~s/\t/        /g;
-    
-    
     # Loop until there is not more content to match
     my @tokens;
     while($content) {

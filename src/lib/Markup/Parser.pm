@@ -39,7 +39,6 @@ sub parse {
     return \@tokens;
 }
 
-
 =head2 required_args
     
 Returns an array of required arugments.
@@ -52,9 +51,7 @@ sub required_args {
 
 =head2 normalize
 
-Converts end of line characters into the default for the platform markup.pl
-is currently running on.
-
+Converts end of line characters and tabs into a values expected buy the tokenizer
 =cut
 
 sub normalize {
@@ -62,6 +59,9 @@ sub normalize {
     
     # match all four of the common eol markers
     $content=~s/\n|\r\n|\n\r|\r/$\//g;
+
+    # Convert tabs into spaces
+    $content=~s/\t/        /g;
     
     return $content;
 }
