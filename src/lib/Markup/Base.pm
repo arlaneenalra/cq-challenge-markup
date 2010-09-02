@@ -69,4 +69,35 @@ sub required_args {
     return ();
 }
 
+=head2 AUTOLOAD
+
+Catch undefined method calls to automagically create accessors.
+
+=cut
+
+sub AUTOLOAD {
+    my ($self, @params)=@_;
+    our $AUTOLOAD;
+
+    # we don't want to handle destructors
+    return if $AUTOLOAD=~m/::DESTROY/;
+
+    # Extract the function name
+    my $name=$AUTOLOAD;
+    $name=~s/^.*:://;
+    
+    # turn off strict so we can 
+    {
+	no strict 'refs';
+	*$AUTOLOAD=sub {
+	    my ($self)=@_;
+	    $self->{$name};
+	};
+    }
+
+    # Call our newly mented routine
+    $self->$name(@params);
+}
+
+
 1;

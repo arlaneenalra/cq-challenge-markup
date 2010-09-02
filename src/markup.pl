@@ -47,50 +47,15 @@ my $parser=Markup::Parser->new(tokenizer => $tokenizer);
 # looking for a stream?
 my $source=@ARGV ? &slurp($ARGV[0]) : &slurp(\*STDIN);
 
-#print &Dumper(&parse($source));
+print &Dumper($parser->parse($source));
 
 =head1 INTERNALS
 
-=head2 parse($content)
-
-Accepts a scalar containing text and parses it into an internal parser tree.
-
-TODO: Add a better description here
-
-=cut
-
-sub parse {
-    my ($content)=@_;
-   
-    # Normalize on a standard eol
-    $content=&normalize($content);
-
-    # Convert the content into a stream of tokens
-    my @tokens=&Markup::Tokenizer->tokenize($content);
-    
-    return \@tokens;
-}
 
 =head1 UTILITY FUNCTIONS 
 
 Descriptions of some of the internals that have very little to do with 
 overall usage.
-
-=head2 normalize_eol
-
-Converts end of line characters into the default for the platform markup.pl
-is currently running on.
-
-=cut
-
-sub normalize {
-    my ($content)=@_;
-    
-    # match all four of the common eol markers
-    $content=~s/\n|\r\n|\n\r|\r/$\//g;
-    
-    return $content;
-}
 
 =head2 slurp
 
