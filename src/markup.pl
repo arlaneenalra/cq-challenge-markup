@@ -12,7 +12,7 @@ use diagnostics;
 # Provide a readable display of our parsed data structure
 use Data::Dumper;
 
-#use Markup::Parser;
+use Markup::Parser;
 use Markup::Tokenizer;
 
 
@@ -40,11 +40,14 @@ cat test.txt | markup.pl
 
 =cut
 
+my $tokenizer=Markup::Tokenizer->new();
+my $parser=Markup::Parser->new(tokenizer => $tokenizer);
+
 # Do we have a file on the command line or should we be 
 # looking for a stream?
 my $source=@ARGV ? &slurp($ARGV[0]) : &slurp(\*STDIN);
 
-print &Dumper(&parse($source));
+#print &Dumper(&parse($source));
 
 =head1 INTERNALS
 
@@ -63,7 +66,7 @@ sub parse {
     $content=&normalize($content);
 
     # Convert the content into a stream of tokens
-    my @tokens=&Markup::Tokenizer::tokenize($content);
+    my @tokens=&Markup::Tokenizer->tokenize($content);
     
     return \@tokens;
 }

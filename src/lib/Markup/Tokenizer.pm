@@ -1,6 +1,10 @@
 package Markup::Tokenizer;
 
+use strict;
+
 use fields qw//;
+
+use base 'Markup::Base';
 
 # Definition of the various tokens 
 my @token_patterns=(
@@ -36,21 +40,6 @@ Markup::Tokenizer - Takes a string and returns an array of tokens
 
 =head1 METHODS
 
-=head2 new
-
-=cut
-
-sub new {
-    my ($self)=@_;
-    
-    # setup the fields hash
-    $self=fields::new($self)
-	unless $self;
-
-    return $self;
-}
-
-
 =head2 tokenize($content)
 
 Takes in a scalar representing content and returns a string of tokens 
@@ -59,7 +48,7 @@ which can then be used to provide structure to our content.
 =cut
 
 sub tokenize {
-    my ($content)=@_;
+    my ($self, $content)=@_;
     
     # Convert tabs into spaces
     $content=~s/\t/        /g;
@@ -71,7 +60,7 @@ sub tokenize {
 	
 	# Retrieve a token and add it to our
 	# list of tokens
-	my ($token, $txt)=&next_token($content);
+	my ($token, $txt)=$self->next_token($content);
 	
 	# strip matched text from the front of our content
 	$content=substr $content, length $txt;
@@ -92,7 +81,7 @@ a token name and the matched text.
 =cut
 
 sub next_token {
-    my ($content)=@_;
+    my ($self, $content)=@_;
     
     # Walk each pattern until we find one that matches
     foreach (@token_patterns) {
