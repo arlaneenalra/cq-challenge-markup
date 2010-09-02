@@ -11,6 +11,28 @@ use Data::Dumper;
 # Mask any libraries in the current directory
 no lib '.';
 
+my @token_patterns=(
+    [qr(\*) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
+
+    # TODO:  Add link processing
+
+    [qr(\\) => 'TAG_START'], # Match the escape character
+    [qr({) => 'TAG_BLOCK_START'], # Match the start of the a tag block
+    [qr(}) => 'TAG_BLOCK_END'], # Match the end of a tag block
+    
+    [qr(  -) => 'UNORDER_LIST'], # Matches an unordered list
+    [qr(  #) => 'ORDER_LIST'], # Matches an ordered list
+    
+    [qr(   ) => '3SPACE'], # Matches leading whitespace
+    [qr(  ) => '2SPACE'], # Matches leading whitespace
+    
+    [qr($/\s*$/) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
+    [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
+
+    # the unmatched case is going to have to be reworked.
+    #[qr(.*) => 'TEXT'], # All unmatched content is treated as simple text
+    );
+
 # Make sure that we are actually dealing with uft8
 binmode STDIN, ':encoding(utf8)';
 binmode STDOUT, ':encoding(utf8)';
@@ -87,7 +109,7 @@ sub tokenize {
 	push @tokens, [$token, $txt];
 
 	# DEBUG: remove latter
-	print "Token: $token => $txt$/";
+	#print "Token: $token => !$txt!$/";
     }
     
     return @tokens;
@@ -102,26 +124,7 @@ Retrieve the first token matched in the passed in content
 sub next_token {
     my ($content)=@_;
     
-    my @token_patterns=(
-	[qr(\*) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
-
-	# TODO:  Add link processing
-
-	[qr({) => 'TAG_START'], # Match the start of a tag
-	[qr(}) => 'TAG_END'], # Match the end of a tag
-	
-	[qr(  -) => 'UNORDER_LIST'], # Matches an unordered list
-	[qr(  #) => 'ORDER_LIST'], # Matches an ordered list
-	
-	[qr( ) => 'SPACE'], # Matches leading whitespace
-	
-	[qr($/\s*$/) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
-	[qr($/) => 'END_OF_LINE'], # Matches an end of line marker
-	
-	[qr(.+) => 'TEXT'], # All unmatched content is treated as simple text
-	);
-    
-    # walk each pattern until we find one that matches
+    # Walk each pattern until we find one that matches
     foreach (@token_patterns) {
 	my ($regex,$token)=@$_;
 
@@ -131,7 +134,38 @@ sub next_token {
 	}
     }
 
-    die "Unable to match remaining content near : " . substr($content,0,20) . "...$/";
+    # We didn't match any tokens at the start of the line, let's see
+    # if there are any further along
+    my $matched;
+    foreach (@token_patterns) {
+	my ($regex,$token)=@$_;
+
+	# does this regex match anywhere in the data?
+	if($content=~m/$regex/) {
+	    my $loc=index $content, $&;
+
+	    # DEBUG: Remove latter
+	    #print "MATCHED:$token => $loc$/";
+
+	    # save off the earliest match we have
+	    if(!$matched) {
+		$matched=$loc;
+	    } else {
+		# is this match earlier than the last one . . .
+		$matched=$loc < $matched ? $loc : $matched;
+	    }
+	}
+    }
+
+    # if any match succeded, then return a substring to that offset
+    if(defined($matched)) {
+	return ("", substr $content,0,$matched);
+    }
+
+    # nothing left but text
+    return ("", $content);
+
+    #die "Unable to match remaining content near : " . substr($content,0,20) . "...$/";
 }
 
 =head1 UTILITY FUNCTIONS 
