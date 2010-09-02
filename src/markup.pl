@@ -14,6 +14,7 @@ use Data::Dumper;
 
 use Markup::Parser;
 use Markup::Tokenizer;
+use Markup::Util qw/slurp/;
 
 
 # Make sure that we are actually dealing with uft8
@@ -51,43 +52,5 @@ print &Dumper($parser->parse($source));
 
 =head1 INTERNALS
 
-
-=head1 UTILITY FUNCTIONS 
-
-Descriptions of some of the internals that have very little to do with 
-overall usage.
-
-=head2 slurp
-
-Takes in a file handle and slurps its entire contents into a scalar.
-
 =cut
-
-sub slurp {
-    my ($file)=@_;
-
-    local $/; # set the end of line marker to undef 
-
-    # If we were passed a file handle, slurp it and return
-    # otherwise, we treat our argument as a filename.
-    if(ref $file eq 'GLOB') {
-	return <$file>;
-    }
-
-
-    open my $fh, '<', $file
-	or die "Unable to open file $file due to: $!";
-    
-    binmode $fh, ":encoding(utf8)"; # set utf8 encoding
-    
-    my $content=<$fh>;
-
-    close $fh; # clean up properly
-
-    return $content;
-}
-
-
-
-
 
