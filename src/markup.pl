@@ -11,6 +11,7 @@ use Data::Dumper;
 # Mask any libraries in the current directory
 no lib '.';
 
+# Definition of the various tokens 
 my @token_patterns=(
     [qr(\*) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
 
@@ -19,6 +20,11 @@ my @token_patterns=(
     [qr(\\) => 'TAG_START'], # Match the escape character
     [qr({) => 'TAG_BLOCK_START'], # Match the start of the a tag block
     [qr(}) => 'TAG_BLOCK_END'], # Match the end of a tag block
+
+    # [qr(\[) => 'LINK_BLOCK_START'], # Match the start of a link block
+    # [qr(\|) => 'LINK_MIDDLE'], # Match middle of a link block
+    # [qr(\]) => 'LINK_BLOCK_END'], # Match the end of a link block
+
     
     [qr(  -) => 'UNORDER_LIST'], # Matches an unordered list
     [qr(  #) => 'ORDER_LIST'], # Matches an ordered list
@@ -28,9 +34,6 @@ my @token_patterns=(
     
     [qr($/\s*$/) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
     [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
-
-    # the unmatched case is going to have to be reworked.
-    #[qr(.*) => 'TEXT'], # All unmatched content is treated as simple text
     );
 
 # Make sure that we are actually dealing with uft8
@@ -95,9 +98,12 @@ which can then be used to provide structure to our content.
 sub tokenize {
     my ($content)=@_;
     
-    my @tokens;
+    # Convert tabs into spaces
+    $content=~s/\t/        /g;
+    
     
     # Loop until there is not more content to match
+    my @tokens;
     while($content) {
 	
 	# Retrieve a token and add it to our
