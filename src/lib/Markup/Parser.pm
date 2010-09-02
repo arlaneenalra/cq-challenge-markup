@@ -8,7 +8,7 @@ use base 'Markup::Tokenizer';
 
 =head1 NAME
 
-Markupe::Parser - Base class for Markup parsers.
+Markup::Parser - Base class for Markup parsers.
 
 =head1 SYNOPSIS
 
