@@ -53,10 +53,31 @@ sub new {
     if(@not_set) {
 	die 'Required argument' . (@not_set>1? 's ' : ' ') . join(', ', @not_set) . ' have not been propperly set.';
     }
+
+    # set default values
+    my %default_values=%{$self->default_values};
+    foreach (keys %default_values) {
+	$self->{$_}=$default_values{$_};
+    }
     
     return $self;
 }
 
+
+=head2 reset
+    
+Resets the list of field names passed in to their default values
+
+=cut
+sub reset {
+    my ($self, @fields)=@_;
+    
+    my %default_values=%{$self->default_values};
+
+    foreach (@fields) {
+	$self->{$_}=$default_values{$_};
+    }
+}
 
 =head2 required_args
 
@@ -67,6 +88,16 @@ implement their own version whih returns an array of argument names.
 
 sub required_args {
     return ();
+}
+
+=head2 default_values
+
+Default implementation of default values sets not defaults.
+
+=cut
+
+sub default_values {
+    return {};
 }
 
 =head2 AUTOLOAD
@@ -89,7 +120,7 @@ sub AUTOLOAD {
     # turn off strict so we can 
     {
 	no strict 'refs';
-	*$AUTOLOAD=sub {
+	*$AUTOLOAD=sub : lvalue {
 	    my ($self)=@_;
 	    $self->{$name};
 	};
