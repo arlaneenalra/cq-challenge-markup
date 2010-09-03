@@ -5,7 +5,7 @@ use warnings;
 use diagnostics;
 
 no lib '.';
-use lib './lib'; # make sure to include the 
+use lib './src/lib'; # make sure to include the 
 
 # Provide a readable display of our parsed data structure
 use Data::Dumper;
@@ -25,7 +25,7 @@ test.pl - Test case driver
 =cut
 
 # Get our tests
-my @tests=&get_tests('../tests');
+my @tests=&get_tests('./tests');
 
 
 # run each test individually
