@@ -47,7 +47,7 @@ foreach (@tests) {
 	
 	# call our back end handler to convert 
 	# to the simple xml format
-	my $output=$tree->string('Markup::Simple::Xml');
+	my $output=$tree->string('Xml');
 	
 	# a naive approach to checking output
 	ok($output eq $xml, "$_ - Chcking Output");

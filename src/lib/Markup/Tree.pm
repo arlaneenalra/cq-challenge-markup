@@ -67,6 +67,30 @@ sub default_values {
     };
 }
 
+=head2 string
+
+Process this tree using the given backend, it defaults to Markup::Backend::Xml
+
+=cut
+
+sub string {
+    my ($self, $backend)=@_;
+
+    # if we have no internals, start with an empty body
+    my $string=(@{$self->body})?'<body>':'<body/>';
+
+    #TODO: Actually do something with the backend
+    
+    foreach (@{$self->body}) {
+	
+	
+    }
+
+    $string.=(@{$self->body})?'</body>':'';
+
+    return $string . $/;
+}
+
 # =head2 required_args
     
 # Returns an array of required constructor arugments.

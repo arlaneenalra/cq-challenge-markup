@@ -48,7 +48,13 @@ my $parser=Markup::Parser->new(tokenizer => $tokenizer);
 # looking for a stream?
 my $source=@ARGV ? &slurp($ARGV[0]) : &slurp(\*STDIN);
 
-print &Dumper($parser->parse($source));
+# parse the source
+my $tree=$parser->parse($source);
+
+# DEBUG: output the tree with data dumper
+print &Dumper($tree);
+
+print $tree->string();
 
 =head1 INTERNALS
 
