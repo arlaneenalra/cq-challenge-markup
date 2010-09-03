@@ -68,7 +68,12 @@ sub _parse_internal {
 	    $context->append_text($txt);
 
 	} elsif($token eq 'END_OF_LINE') { # Handle a single eol 
-	    $context->append_text(' ');
+	    
+	    # Don't append a space if there are no more tags after
+	    # this one.
+	    if(@$tokens >1) {
+		$context->append_text(' ');
+	    }
 	    
 	} elsif($token eq 'END_OF_PARAGRAPH') { # Handle the end of a node
 	    $context->append_node();

@@ -42,9 +42,9 @@ sub append_node {
     my ($self)=@_;
 
     # add the node
-    push @{$self->body}, {
+    push @{$self->body}, [
 	$self->node => $self->text
-    };
+    ];
     
 
     # put us back into the default parsing state
@@ -77,16 +77,24 @@ sub string {
     my ($self, $backend)=@_;
 
     # if we have no internals, start with an empty body
-    my $string=(@{$self->body})?'<body>':'<body/>';
+    my $string=(@{$self->body})?"<body>$/":'<body/>';
 
     #TODO: Actually do something with the backend
     
     foreach (@{$self->body}) {
+	# handle a simple tag
+	my ($tag, $content)=@{$_};
 	
+	# simple tag
+	$string.="\t<$tag>$content</$tag>$/";
 	
     }
 
+    # did we have an empty body tag?
     $string.=(@{$self->body})?'</body>':'';
+
+    # convert indentations to 4 spaces
+    $string=~s/\t/    /g;
 
     return $string . $/;
 }
