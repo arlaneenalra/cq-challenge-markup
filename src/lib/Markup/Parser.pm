@@ -62,9 +62,8 @@ sub _parse_internal {
     my $not_done=1; # set to true if we need to return to a parent
     
     # handle various tokens
-    while(@$tokens && $not_done) {
+    while(@$tokens and $not_done) {
 	my ($token, $txt)=@{$tokens->[0]};
-	print "$token => $txt$/";
 
 	my $no_shift=''; # set to true if a shift is not needed
 
@@ -73,18 +72,35 @@ sub _parse_internal {
 	if($token eq '') { # Handle simple text
 	    $context->append_text($txt);
 
-	} elsif($token eq 'END_OF_LINE') { # Handle a single eol 
-	    
-	    # Don't append a space if there are no more tags after
-	    # this one.
+	} elsif($token eq 'END_OF_LINE'
+	    or $token eq 'END_OF_PARAGRAPH') { # Handle a single eol 
+
+	    # are there any more tokens?
 	    if(@$tokens >1) {
-		$context->append_text(' ');
+
+		# if we are at an end of line, convert it to a space
+		$context->append_text(' ')
+		    if($token eq 'END_OF_LINE');
+
+		# if we are at the end of a paragraph, append a node
+		$context->append_node()
+		    if($token eq 'END_OF_PARAGRAPH');
+
+		# move to the next line
+		shift @$tokens;
+
+                # check indent on end of line
+		if($context->indent) {
+		    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+
+		} else {
+		    # we have already shifted once
+		    $no_shift=1;
+		}
+		
 	    } else {
 		$context->append_node();
 	    }
-	    
-	} elsif($token eq 'END_OF_PARAGRAPH') { # Handle the end of a node
-	    $context->append_node();
 
     	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
@@ -97,25 +113,19 @@ sub _parse_internal {
 
 	} elsif($token eq '2SPACE'
 	    or $token eq '3SPACE') { # Handle a block quote
-	    
+
 	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-	    
-	    # # recurse to handle the blockquote 
-	    # $context->append_node(
-	    # 	$self->_parse_internal(
-	    # 	    Markup::Tree->new(
-	    # 		name => 'blockquote',
-	    # 		indent => $context->indent+2),
-	    # 	    $tokens));
-	    
+	    	    
 	} else { # Catch all to be for use during implementation
 	    warn "Unhandled token: $token";
 	}
 	
 	# move to the next token unless we are already there
-	shift @$tokens
-	    unless $no_shift;
+	unless($no_shift) {
+	    shift @$tokens;
+	}
     }
+
 
     # do a final append for the given node
     #$context->append_node();
@@ -157,9 +167,11 @@ sub _parse_indent {
     
     my $diff=$count - $context->indent;
 
+
+    print "$/DIFF:$diff$/";
+
     # do we have a new indentation level?
-    if(!$diff) {
-	print "HERE";
+    if($diff == 0) {
 	# we are at the same indent level, do nothing
 	return (1,1);
 
@@ -176,7 +188,7 @@ sub _parse_indent {
 	    		name => 'blockquote',
 	    		indent => $context->indent+2),
 	    	    $tokens));
-	    return (1,'');
+	    return (1,1);
 
 	} elsif($diff >= 3) {
 	    # verbatim
@@ -186,10 +198,10 @@ sub _parse_indent {
 	    		name => 'verbatim',
 	    		indent => $context->indent+3),
 		    $tokens));
-	    return (1,'');
-	} else {
-	    return ('','');
+	    return (1,1);
 	}
+    } else { # moving back up an indention level
+	return ('',1);
     }
 }
 
