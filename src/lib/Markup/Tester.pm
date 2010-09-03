@@ -4,6 +4,10 @@ use strict;
 use warnings;
 use diagnostics;
 
+use base 'Exporter';
+
+our @EXPORT=qw/run_test/;
+
 # Required for the test suite
 use Markup::Parser;
 use Markup::Tokenizer;
@@ -37,6 +41,7 @@ sub run_test {
 
     # strip off the .t
     $test=~s/\.t$//;
+    $test=~s/.*\///;
 
     $path.="/$test";
     

@@ -33,7 +33,7 @@ no lib '.';
 use lib './src/lib';
 
 use Markup::Tester;
-&run_test('../tests/', \$0);
+&run_test('./tests', \$0);
 
 EOT
 
