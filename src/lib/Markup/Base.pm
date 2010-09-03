@@ -106,7 +106,7 @@ Catch undefined method calls to automagically create accessors.
 
 =cut
 
-sub AUTOLOAD {
+sub AUTOLOAD : lvalue {
     my ($self, @params)=@_;
     our $AUTOLOAD;
 
