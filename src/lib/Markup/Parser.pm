@@ -58,10 +58,13 @@ sub _parse_internal {
     return $context
 	unless @$tokens;
 
+
+    my $not_done=1; # set to true if we need to return to a parent
     
     # handle various tokens
-    while(@$tokens) {
+    while(@$tokens && $not_done) {
 	my ($token, $txt)=@{$tokens->[0]};
+	print "$token => $txt$/";
 
 	my $no_shift=''; # set to true if a shift is not needed
 
@@ -92,17 +95,18 @@ sub _parse_internal {
 	    
 	    $no_shift=$self->_parse_header($context,$tokens);
 
-	} elsif($token eq '2SPACE') { # Handle a block quote
+	} elsif($token eq '2SPACE'
+	    or $token eq '3SPACE') { # Handle a block quote
 	    
-	    shift @$tokens;
-
-	    # recurse to handle the blockquote 
-	    $context->append_node(
-		$self->_parse_internal(
-		    Markup::Tree->new(
-			name => 'blockquote',
-			indent => $context->indent+2),
-		    $tokens));
+	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+	    
+	    # # recurse to handle the blockquote 
+	    # $context->append_node(
+	    # 	$self->_parse_internal(
+	    # 	    Markup::Tree->new(
+	    # 		name => 'blockquote',
+	    # 		indent => $context->indent+2),
+	    # 	    $tokens));
 	    
 	} else { # Catch all to be for use during implementation
 	    warn "Unhandled token: $token";
@@ -117,7 +121,76 @@ sub _parse_internal {
     #$context->append_node();
 
     return $context;
+}
+
+=head2 _parse_indent
+
+Checks to see what indentation level we are currently at
+and takes appropriate action.  Returns a list of values,
+the first being if we are done yet and the second indicating
+if the parent parser needs to move to another token or not.
+
+=cut
+
+#TODO: Space handling will need to be reworked heavily
+
+sub _parse_indent {
+    my ($self, $context, $tokens)=@_;
+
+    # count the number of spaces we have here
+    my $count=0;
+    my ($token, $txt)=@{$tokens->[0]};
+    while($token eq '2SPACE'
+	  or $token eq '3SPACE') {
+	
+	# increment the count correctly
+	$count+=2
+	    if($token eq '2SPACE');
+
+	$count+=3
+	    if($token eq '3SPACE');
+
+	# move to the next token
+	shift @$tokens;
+	($token, $txt)=@{$tokens->[0]};
+    }
     
+    my $diff=$count - $context->indent;
+
+    # do we have a new indentation level?
+    if(!$diff) {
+	print "HERE";
+	# we are at the same indent level, do nothing
+	return (1,1);
+
+    } elsif($diff > 0) {
+	# we are at a new indention level, do we have a blockquote 
+	# or verbatim?
+
+
+	if($diff == 2) {
+	    # blockquote
+    	    $context->append_node(
+	    	$self->_parse_internal(
+	    	    Markup::Tree->new(
+	    		name => 'blockquote',
+	    		indent => $context->indent+2),
+	    	    $tokens));
+	    return (1,'');
+
+	} elsif($diff >= 3) {
+	    # verbatim
+    	    $context->append_node(
+	    	$self->_parse_internal(
+	    	    Markup::Tree->new(
+	    		name => 'verbatim',
+	    		indent => $context->indent+3),
+		    $tokens));
+	    return (1,'');
+	} else {
+	    return ('','');
+	}
+    }
 }
 
 =head2 _parse_header
@@ -125,6 +198,7 @@ sub _parse_internal {
 parses a chain of header '*' characters 
 
 =cut
+
 sub _parse_header {
     my ($self, $context, $tokens)=@_;
     
@@ -134,19 +208,16 @@ sub _parse_header {
     my ($token, $txt)=@{$tokens->[0]};
     # figure out how deep a header we have
     while($token eq 'HEADER_TAG') {
-	($token, $txt)=@{$tokens->[0]};
+	$depth++;
 
-	# are we still looking at a header tag?
-	if($token eq 'HEADER_TAG') {
-	    $depth++;
-	    shift @$tokens;
-	}
-	
+	# move to the next tag
+	shift @$tokens;
+	($token, $txt)=@{$tokens->[0]};	
     }
 
     # do we have a valid header end tag?
     if($token ne 'HEADER_END') {
-	warn "Bad $depth deep header near $token token containing $txt";
+	warn "Bad $depth deep header near $token token containing '$txt'";
 
 	$no_shift=1; # attempt to keep going
 
