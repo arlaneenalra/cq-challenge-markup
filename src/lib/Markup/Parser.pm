@@ -88,28 +88,7 @@ sub _parse_internal {
 	} elsif($token eq 'HEADER_TAG' or
 	    $token eq 'HEADER_END') { # Handle headers
 	    
-	    my $depth=1; # track header depth
-	    
-	    
-	    # figure out how deep a header we have
-	    while($token eq 'HEADER_TAG') {
-		($token, $txt)=@{$tokens->[0]};
-
-		if($token eq 'HEADER_TAG') {
-		    $depth++;
-		    shift @$tokens;
-		}
-		
-	    }
-
-	    # do we have a valid header end tag?
-	    if($token ne 'HEADER_END') {
-		warn "Bad $depth deep header near $token token containing $txt";
-		$no_shift=1; # attempt to keep going
-	    }
-
-	    $context->node="h$depth";
-
+	    $no_shift=$self->_parse_header($context,$tokens);
 	} else { # Catch all to be for use during implementation
 	    warn "Unhandled token: $token";
 	}
@@ -124,6 +103,44 @@ sub _parse_internal {
 
     return $context;
     
+}
+
+=head2 _parse_header
+
+parses a chain of header '*' characters 
+
+=cut
+sub _parse_header {
+    my ($self, $context, $tokens)=@_;
+    
+    my $depth=1; # track header depth
+    my $no_shift='';
+    
+    my ($token, $txt)=@{$tokens->[0]};
+    # figure out how deep a header we have
+    while($token eq 'HEADER_TAG') {
+	($token, $txt)=@{$tokens->[0]};
+
+	# are we still looking at a header tag?
+	if($token eq 'HEADER_TAG') {
+	    $depth++;
+	    shift @$tokens;
+	}
+	
+    }
+
+    # do we have a valid header end tag?
+    if($token ne 'HEADER_END') {
+	warn "Bad $depth deep header near $token token containing $txt";
+
+	$no_shift=1; # attempt to keep going
+
+	$depth--; # we assume the HEADER_END up front
+    }
+
+    $context->node="h$depth";
+    
+    return $no_shift;
 }
 
 =head2 required_args
