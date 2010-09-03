@@ -60,3 +60,6 @@ sub run_test {
     # a naive approach to checking output
     ok($output eq $xml, "$test - Chcking Output");
 }
+
+
+1;
