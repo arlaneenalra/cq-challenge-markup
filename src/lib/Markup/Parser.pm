@@ -62,7 +62,7 @@ sub _parse_internal {
     # handle various tokens
     while(@$tokens) {
 	my ($token, $txt)=@{$tokens->[0]};
-	
+
 	my $no_shift=''; # set to true if a shift is not needed
 
 	# TODO: this might be better handled as a hash
@@ -76,6 +76,8 @@ sub _parse_internal {
 	    # this one.
 	    if(@$tokens >1) {
 		$context->append_text(' ');
+	    } else {
+		$context->append_node();
 	    }
 	    
 	} elsif($token eq 'END_OF_PARAGRAPH') { # Handle the end of a node
@@ -89,6 +91,19 @@ sub _parse_internal {
 	    $token eq 'HEADER_END') { # Handle headers
 	    
 	    $no_shift=$self->_parse_header($context,$tokens);
+
+	} elsif($token eq '2SPACE') { # Handle a block quote
+	    
+	    shift @$tokens;
+
+	    # recurse to handle the blockquote 
+	    $context->append_node(
+		$self->_parse_internal(
+		    Markup::Tree->new(
+			name => 'blockquote',
+			indent => $context->indent+2),
+		    $tokens));
+	    
 	} else { # Catch all to be for use during implementation
 	    warn "Unhandled token: $token";
 	}
@@ -99,7 +114,7 @@ sub _parse_internal {
     }
 
     # do a final append for the given node
-    $context->append_node();
+    #$context->append_node();
 
     return $context;
     

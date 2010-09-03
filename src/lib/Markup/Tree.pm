@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text body node escape/;
+use fields qw/indent text name body node escape/;
 
 use base 'Markup::Base';
 
@@ -34,17 +34,31 @@ sub append_text {
 =head2 append_node
 
 Append a new internal node to the body of whatever node we are currently working
-on.  It assumes that text contains the content of our current node
+on.  If no value is given, it assumes that text contains the value of the
+node to be appended
 
 =cut
 
 sub append_node {
-    my ($self)=@_;
+    my ($self, $node)=@_;
 
-    # add the node
-    push @{$self->body}, [
-	$self->node => $self->text
-    ];
+    # do we have a simple or complex node
+    if($node) {
+	# add a complex node
+	push @{$self->body}, $node;
+
+	# warn of possible syntax error
+	if($self->text) {
+	    warn 'Possible bad state while appending ' . 
+		$node->name . ' near : ' . $self->text;
+	}
+
+    } else {
+	# add a simple node
+	push @{$self->body}, [
+	    $self->node => $self->text
+	];
+    }
     
 
     # put us back into the default parsing state
@@ -65,6 +79,7 @@ sub default_values {
 	body => [],
 	node => 'p',
 	escape => '',
+	name => 'body',
     };
 }
 
@@ -78,21 +93,36 @@ sub string {
     my ($self, $backend)=@_;
 
     # if we have no internals, start with an empty body
-    my $string=(@{$self->body})?"<body>$/":'<body/>';
+    my $name=$self->name;
+    my $string=(@{$self->body})?"<$name>$/":"<$name/>";
 
     #TODO: Actually do something with the backend
     
     foreach (@{$self->body}) {
-	# handle a simple tag
-	my ($tag, $content)=@{$_};
 	
-	# simple tag
-	$string.="\t<$tag>$content</$tag>$/";
+	if(ref $_ eq 'ARRAY') { # simple tag
+	    # handle a simple tag
+	    my ($tag, $content)=@{$_};
+
+	    # is there anything in this tag?
+	    if($content) {
+		$string.="\t<$tag>$content</$tag>$/";
+	    } else {
+		$string.="\t<$tag/>$/";
+	    }
+
+	} elsif(ref $_) { # a complex tag
+	    my $temp=$_->string($backend);
+	    # indent everything one more time
+	    $temp=~s/^/\t/gm;
+	    
+	    $string.=$temp;   
+	}
 	
     }
 
     # did we have an empty body tag?
-    $string.=(@{$self->body})?'</body>':'';
+    $string.=(@{$self->body})?"</$name>":'';
 
     # convert indentations to 4 spaces
     $string=~s/\t/    /g;
@@ -104,6 +134,9 @@ sub string {
     
 Meanings and uses for some of the public accessible fields
 
+=head2 name 
+
+Name for the enclosing block defined by this tree node.
 
 =head2 escape
 
