@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text body node/;
+use fields qw/indent text body node escape/;
 
 use base 'Markup::Base';
 
@@ -64,6 +64,7 @@ sub default_values {
 	text => '',
 	body => [],
 	node => 'p',
+	escape => '',
     };
 }
 
@@ -99,15 +100,16 @@ sub string {
     return $string . $/;
 }
 
-# =head2 required_args
+=head1 FIELDS
     
-# Returns an array of required constructor arugments.
+Meanings and uses for some of the public accessible fields
 
-# =cut
 
-# sub required_args {
-#     return qw/name/;
-# }
+=head2 escape
 
+If this is set to true, we have previously seen an escape token
+and are waiting for the next token to process.
+
+=cut
 
 1;

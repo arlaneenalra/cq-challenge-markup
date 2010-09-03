@@ -57,10 +57,13 @@ sub _parse_internal {
     # currently exists
     return $context
 	unless @$tokens;
+
     
     # handle various tokens
     while(@$tokens) {
 	my ($token, $txt)=@{$tokens->[0]};
+	
+	my $no_shift=''; # set to true if a shift is not needed
 
 	# TODO: this might be better handled as a hash
 
@@ -77,13 +80,43 @@ sub _parse_internal {
 	    
 	} elsif($token eq 'END_OF_PARAGRAPH') { # Handle the end of a node
 	    $context->append_node();
+
+    	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
+	                              # this could mean any number of things
+	    $self->_parse_escape($context, @$tokens);
+
+	} elsif($token eq 'HEADER_TAG' or
+	    $token eq 'HEADER_END') { # Handle headers
 	    
+	    my $depth=1; # track header depth
+	    
+	    
+	    # figure out how deep a header we have
+	    while($token eq 'HEADER_TAG') {
+		($token, $txt)=@{$tokens->[0]};
+
+		if($token eq 'HEADER_TAG') {
+		    $depth++;
+		    shift @$tokens;
+		}
+		
+	    }
+
+	    # do we have a valid header end tag?
+	    if($token ne 'HEADER_END') {
+		warn "Bad $depth deep header near $token token containing $txt";
+		$no_shift=1; # attempt to keep going
+	    }
+
+	    $context->node="h$depth";
+
 	} else { # Catch all to be for use during implementation
 	    warn "Unhandled token: $token";
 	}
 	
-	# move to the next token
-	shift @$tokens;
+	# move to the next token unless we are already there
+	shift @$tokens
+	    unless $no_shift;
     }
 
     # do a final append for the given node

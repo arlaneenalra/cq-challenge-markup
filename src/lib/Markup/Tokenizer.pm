@@ -8,11 +8,12 @@ use base 'Markup::Base';
 
 # Definition of the various tokens 
 my @token_patterns=(
+    [qr(\* ) => 'HEADER_END'], # Matches the end of a header 
     [qr(\*) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
 
     # TODO:  Add link processing
 
-    [qr(\\) => 'TAG_START'], # Match the escape character
+    [qr(\\) => 'ESCAPE'], # Match the escape character
     [qr({) => 'TAG_BLOCK_START'], # Match the start of the a tag block
     [qr(}) => 'TAG_BLOCK_END'], # Match the end of a tag block
 
