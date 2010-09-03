@@ -7,9 +7,6 @@ use diagnostics;
 no lib '.';
 use lib './src/lib'; # make sure to include the 
 
-# Provide a readable display of our parsed data structure
-use Data::Dumper;
-
 use Markup::Parser;
 use Markup::Tokenizer;
 use Markup::Util qw/slurp/;
@@ -92,4 +89,3 @@ sub get_tests {
 
     return sort @tests;
 }
-
