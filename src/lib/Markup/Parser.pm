@@ -135,6 +135,64 @@ sub _parse_internal {
     return $context;
 }
 
+=head2 _parse_verbatim
+
+Handle verbatim blocks
+
+=cut
+
+sub _parse_verbatim {
+    my ($self, $context, $tokens)=@_;
+
+    # If we have no more tokens, return the tree as it
+    # currently exists
+    return $context
+	unless @$tokens;
+
+
+    my $not_done=1; # set to true if we need to return to a parent
+    
+    # handle various tokens
+    while(@$tokens and $not_done) {
+	my ($token, $txt)=@{$tokens->[0]};
+
+	my $no_shift=''; # set to true if a shift is not needed
+
+	# TODO: this might be better handled as a hash
+
+	if($token eq 'INDENT') { # Handle a block quote
+	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+	    
+	} elsif($token eq 'END_OF_LINE') {
+
+	    if(@$tokens>1) {
+		# parse the next object and see if we have a decrease in indentation
+		($not_done, $no_shift)=$self->_parse_indent($context, [$tokens->[1]]);
+		
+		# a not done here means we are at the same indentation
+		# level
+		if($not_done) {
+		    $context->append_text($txt);
+		}
+		
+		# we processed two tokens 
+		shift @$tokens;
+	    }
+
+	} else {
+
+	    $context->append_text($txt);
+	}
+	
+	unless($no_shift) {
+	    shift @$tokens;
+	}
+    }
+
+    return $context;
+}
+
+
 =head2 _parse_indent
 
 Checks to see what indentation level we are currently at
@@ -143,8 +201,6 @@ the first being if we are done yet and the second indicating
 if the parent parser needs to move to another token or not.
 
 =cut
-
-#TODO: Space handling will need to be reworked heavily
 
 sub _parse_indent {
     my ($self, $context, $tokens)=@_;
@@ -170,9 +226,15 @@ sub _parse_indent {
 	return (1,'');
 
     } elsif($diff > 0) {
-	# we are at a new indention level, do we have a blockquote 
-	# or verbatim?
+	# are we already parsing a verbatim block?
+	if($context->verbatim) {
+	    # set this token to a text token and 
+	    # plug in the number of spaces minus current indention level
+	    @{$tokens->[0]}=('', ' ' x $context->indent);
+	    return (1,'');
+	}
 
+	# do we have a blockquote or verbatim?
 
 	if($diff == 2) {
 	    # blockquote
@@ -186,14 +248,15 @@ sub _parse_indent {
 
 	} elsif($diff >= 3) {
 	    # replace the current token with a text token
-	    @{$tokens->[0]}=('',' 'x($diff-3));
+	    @{$tokens->[0]}=('',' ' x ($diff-3));
 	    
 	    # verbatim
     	    $context->append_node(
-	    	$self->_parse_internal(
+	    	$self->_parse_verbatim(
 	    	    Markup::Tree->new(
-	    		name => 'verbatim',
-	    		indent => $context->indent+3),
+	    		name => 'pre',
+	    		indent => $context->indent+3,
+			verbatim => 1),
 		    $tokens));
 	    return (1,1);
 	}

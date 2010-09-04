@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text name body node escape/;
+use fields qw/indent text name body node escape verbatim/;
 
 use base 'Markup::Base';
 
@@ -80,6 +80,7 @@ sub default_values {
 	node => 'p',
 	escape => '',
 	name => 'body',
+	verbatim => '',
     };
 }
 
@@ -91,38 +92,48 @@ Process this tree using the given backend, it defaults to Markup::Backend::Xml
 
 sub string {
     my ($self, $backend)=@_;
-
-    # if we have no internals, start with an empty body
-    my $name=$self->name;
-    my $string=(@{$self->body})?"<$name>$/":"<$name/>";
-
-    #TODO: Actually do something with the backend
     
-    foreach (@{$self->body}) {
-	
-	if(ref $_ eq 'ARRAY') { # simple tag
-	    # handle a simple tag
-	    my ($tag, $content)=@{$_};
+    my $name=$self->name;
+    my $string.='';
 
-	    # is there anything in this tag?
-	    if($content) {
-		$string.="\t<$tag>$content</$tag>$/";
-	    } else {
-		$string.="\t<$tag/>$/";
-	    }
+    if($self->verbatim) {
+	$string=$self->text?"<$name>":"<$name/>";
+	$string.=$self->text;
+	$string.=$self->text?"</$name>":'';
 
-	} elsif(ref $_) { # a complex tag
-	    my $temp=$_->string($backend);
-	    # indent everything one more time
-	    $temp=~s/^/\t/gm;
+    } else {
+	# if we have no internals, start with an empty body
+	$string=(@{$self->body})?"<$name>$/":"<$name/>";
+
+	#TODO: Actually do something with the backend
+
+	foreach (@{$self->body}) {
 	    
-	    $string.=$temp;   
-	}
-	
-    }
+	    if(ref $_ eq 'ARRAY') { # simple tag
+		# handle a simple tag
+		my ($tag, $content)=@{$_};
 
-    # did we have an empty body tag?
-    $string.=(@{$self->body})?"</$name>":'';
+		# is there anything in this tag?
+		if($content) {
+		    $string.="\t<$tag>$content</$tag>$/";
+		} else {
+		    $string.="\t<$tag/>$/";
+		}
+
+	    } elsif(ref $_) { # a complex tag
+		my $temp=$_->string($backend);
+		# indent everything one more time
+		$temp=~s/^/\t/gm;
+		
+		$string.=$temp;   
+	    }
+	    
+	}
+
+
+	# did we have an empty body tag?
+	$string.=(@{$self->body})?"</$name>":'';
+    }
 
     # convert indentations to 4 spaces
     $string=~s/\t/    /g;
@@ -142,6 +153,15 @@ Name for the enclosing block defined by this tree node.
 
 If this is set to true, we have previously seen an escape token
 and are waiting for the next token to process.
+
+=head2 indent
+
+Indicates the current level of indentation in.
+
+=head2 verbatim
+
+If this is set to true it indiciates that the content of this node 
+should be treated as pure text only.  (There are no child nodes.)
 
 =cut
 
