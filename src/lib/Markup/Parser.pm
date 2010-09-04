@@ -36,9 +36,6 @@ sub parse {
     # Convert the content into a stream of tokens
     my @tokens=$self->tokenizer->tokenize($content);
 
-    use Data::Dumper;
-    print &Dumper(\@tokens);
-
     # Parse our token stream
     return $self->_parse_internal(Markup::Tree->new(), \@tokens);
 }
@@ -122,7 +119,6 @@ sub _parse_internal {
 	}
 	
 	# move to the next token unless we are already there
-	print &Dumper($tokens->[0]);
 	unless($no_shift) {
 	    shift @$tokens;
 	}
@@ -166,17 +162,17 @@ sub _parse_verbatim {
 	} elsif($token eq 'END_OF_LINE') {
 
 	    if(@$tokens>1) {
+
+		shift @$tokens;
+
 		# parse the next object and see if we have a decrease in indentation
-		($not_done, $no_shift)=$self->_parse_indent($context, [$tokens->[1]]);
+		($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
 		
 		# a not done here means we are at the same indentation
 		# level
 		if($not_done) {
 		    $context->append_text($txt);
 		}
-		
-		# we processed two tokens 
-		shift @$tokens;
 	    }
 
 	} else {
@@ -218,8 +214,6 @@ sub _parse_indent {
     my $diff=$count - $context->indent;
 
 
-    print "$/DIFF:$diff$/";
-
     # do we have a new indentation level?
     if($diff == 0) {
 	# we are at the same indent level, do nothing
@@ -230,8 +224,8 @@ sub _parse_indent {
 	if($context->verbatim) {
 	    # set this token to a text token and 
 	    # plug in the number of spaces minus current indention level
-	    @{$tokens->[0]}=('', ' ' x $context->indent);
-	    return (1,'');
+	    @{$tokens->[0]}=('', ' ' x $diff);
+	    return (1,1);
 	}
 
 	# do we have a blockquote or verbatim?
