@@ -99,6 +99,8 @@ sub _parse_internal {
 		}
 		
 	    } else {
+		# if we are the last token, close out whatever 
+		# node we were working on
 		$context->append_node();
 	    }
 
@@ -111,8 +113,7 @@ sub _parse_internal {
 	    
 	    $no_shift=$self->_parse_header($context,$tokens);
 
-	} elsif($token eq '2SPACE'
-	    or $token eq '3SPACE') { # Handle a block quote
+	} elsif($token eq 'INDENT') { # Handle a block quote
 
 	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
 	    	    
@@ -121,6 +122,7 @@ sub _parse_internal {
 	}
 	
 	# move to the next token unless we are already there
+	print &Dumper($tokens->[0]);
 	unless($no_shift) {
 	    shift @$tokens;
 	}
@@ -148,23 +150,15 @@ sub _parse_indent {
     my ($self, $context, $tokens)=@_;
 
     # count the number of spaces we have here
-    my $count=0;
     my ($token, $txt)=@{$tokens->[0]};
-    while($token eq '2SPACE'
-	  or $token eq '3SPACE') {
-	
-	# increment the count correctly
-	$count+=2
-	    if($token eq '2SPACE');
+    my $count=length $txt;
 
-	$count+=3
-	    if($token eq '3SPACE');
-
-	# move to the next token
-	shift @$tokens;
-	($token, $txt)=@{$tokens->[0]};
+    # make sure we are looking at an indent token
+    if($token ne 'INDENT') {
+	$count=0;
     }
-    
+
+    # how different than the current indention are we?
     my $diff=$count - $context->indent;
 
 
@@ -173,7 +167,7 @@ sub _parse_indent {
     # do we have a new indentation level?
     if($diff == 0) {
 	# we are at the same indent level, do nothing
-	return (1,1);
+	return (1,'');
 
     } elsif($diff > 0) {
 	# we are at a new indention level, do we have a blockquote 
@@ -191,6 +185,9 @@ sub _parse_indent {
 	    return (1,1);
 
 	} elsif($diff >= 3) {
+	    # replace the current token with a text token
+	    @{$tokens->[0]}=('',' 'x($diff-3));
+	    
 	    # verbatim
     	    $context->append_node(
 	    	$self->_parse_internal(
@@ -201,7 +198,11 @@ sub _parse_indent {
 	    return (1,1);
 	}
     } else { # moving back up an indention level
-	return ('',1);
+	
+	# no_shift won't propgate to parent scope
+	# so we do this to avoid getting shifted
+	unshift @$tokens, ['','']; 
+	return ('','');
     }
 }
 

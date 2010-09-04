@@ -25,8 +25,7 @@ my @token_patterns=(
     [qr(  -) => 'UNORDER_LIST'], # Matches an unordered list
     [qr(  #) => 'ORDER_LIST'], # Matches an ordered list
     
-    [qr(   ) => '3SPACE'], # Matches leading whitespace
-    [qr(  ) => '2SPACE'], # Matches leading whitespace
+    [qr(   *) => 'INDENT'], # Matches 2 or more leading spaces 
     
     [qr($/\s*$/) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
     [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
