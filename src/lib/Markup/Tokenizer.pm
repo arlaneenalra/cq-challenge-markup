@@ -31,6 +31,14 @@ my @token_patterns=(
     [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
     );
 
+# list tokens that may only appear after certain other tokens
+my %token_rules=(
+    'HEADER_END' => [qw/HEADER_TAG INDENT END_OF_LINE END_OF_PARAGRAPH/],
+    'UNORDERED_LIST' => [qw/INDENT/],
+    'ORDERED_LIST' => [qw/INDENT/],
+    'INDENT' => [qw/END_OF_LINE END_OF_PARAGRAPH/],
+    );
+
 =head1 NAME
 
 Markup::Tokenizer - Takes a string and returns an array of tokens
@@ -52,6 +60,7 @@ sub tokenize {
     
     # Loop until there is not more content to match
     my @tokens;
+    my $last_token=undef;
     while($content) {
 	
 	# Retrieve a token and add it to our
@@ -60,10 +69,23 @@ sub tokenize {
 	
 	# strip matched text from the front of our content
 	$content=substr $content, length $txt;
+
+	# check for special case tokens
+	if($token_rules{$token}
+	    and defined($last_token)) {
+	    
+	    # look for any matching rules
+	    my @match=grep { $last_token eq $_ } @{$token_rules{$token}};
+	    
+	    unless(@match) {
+		# convert special case tokens to plain text
+		$token='';
+	    }
+	}
+	
+	$last_token=$token;
 	push @tokens, [$token, $txt];
 
-	# DEBUG: remove latter
-	#print "Token: $token => !$txt!$/";
     }
     
     return @tokens;
@@ -120,7 +142,6 @@ sub next_token {
     # nothing left but text
     return ("", $content);
 
-    #die "Unable to match remaining content near : " . substr($content,0,20) . "...$/";
 }
 
 1;
