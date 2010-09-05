@@ -72,35 +72,8 @@ sub _parse_internal {
 
 	} elsif($token eq 'END_OF_LINE'
 	    or $token eq 'END_OF_PARAGRAPH') { # Handle a single eol 
-
-	    # are there any more tokens?
-	    if(@$tokens >1) {
-
-		# if we are at an end of line, convert it to a space
-		$context->append_text(' ')
-		    if($token eq 'END_OF_LINE');
-
-		# if we are at the end of a paragraph, append a node
-		$context->append_node()
-		    if($token eq 'END_OF_PARAGRAPH');
-
-		# move to the next line
-		shift @$tokens;
-
-                # check indent on end of line
-		if($context->indent) {
-		    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-
-		} else {
-		    # we have already shifted once
-		    $no_shift=1;
-		}
-		
-	    } else {
-		# if we are the last token, close out whatever 
-		# node we were working on
-		$context->append_node();
-	    }
+	    
+	    ($not_done, $no_shift)=$self->_parse_eol($context,$tokens);
 
     	} elsif($token eq 'ORDERED_LIST'
 		or $token eq 'UNORDERED_LIST') { # Handle various kinds of lists
@@ -137,6 +110,54 @@ sub _parse_internal {
 
     return $context;
 }
+
+=head2 _parse_eol
+
+Handles end of line/end of paragraph
+
+=cut
+
+sub _parse_eol {
+    my ($self, $context, $tokens)=@_;
+
+    my $not_done=1;
+    my $no_shift='';
+
+    my ($token, $txt)=@{$tokens->[0]};
+
+    # are there any more tokens?
+    if(@$tokens >1) {
+
+	# if we are at an end of line, convert it to a space
+	$context->append_text(' ')
+	    if($token eq 'END_OF_LINE');
+
+	# if we are at the end of a paragraph, append a node
+	$context->append_node()
+	    if($token eq 'END_OF_PARAGRAPH');
+
+	# move to the next line
+	shift @$tokens;
+
+	# check indent on end of line
+	if($context->indent) {
+	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+
+	} else {
+	    # we have already shifted once
+	    $no_shift=1;
+	}
+	
+    } else {
+	# if we are the last token, close out whatever 
+	# node we were working on
+	$context->append_node();
+    }
+
+    return ($not_done, $no_shift);
+}
+
+
 
 =head2 _parse_list
 
