@@ -60,7 +60,7 @@ sub run_test {
     
     # call our back end handler to convert 
     # to the simple xml format
-    my $output=$tree->string('Xml');
+    my $output=$tree->string('Markup::Backend::Xml');
     
     # a naive approach to checking output
     ok($output eq $xml, "$test - Chcking Output");
