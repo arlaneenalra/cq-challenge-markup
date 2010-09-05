@@ -58,6 +58,9 @@ which can then be used to provide structure to our content.
 sub tokenize {
     my ($self, $content)=@_;
     
+    # Strip emacs mode marker
+    $content=~s/-\*-.*-\*-//;
+    
     # Loop until there is not more content to match
     my @tokens;
     my $last_token=undef;

@@ -100,7 +100,7 @@ sub string {
 
     # inline and empty tags to not get a $/ after them
     unless($tree->inline
-	or !@{$tree->body}) {
+	or (!@{$tree->body} and $container{$name})) {
 	$string.=$/;
     }
 
