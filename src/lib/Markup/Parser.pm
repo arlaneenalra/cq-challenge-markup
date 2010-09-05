@@ -164,7 +164,7 @@ sub _parse_list {
 	    $self->_parse_internal(
 		Markup::Tree->new(
 		    name => 'li',
-		    indent => $context->indent+2),
+		    indent => $context->indent),
 		$tokens));
 
 	return '';
