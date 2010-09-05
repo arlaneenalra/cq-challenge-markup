@@ -108,13 +108,16 @@ sub _parse_internal {
 		or $token eq 'UNORDERED_LIST') { # Handle various kinds of lists
 	    
 	    $self->_parse_list($context, $tokens);
-
-	    $no_shift=1;
 	    
 	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
 	    $no_shift=$self->_parse_escape($context, $tokens);
 
+	} elsif($token eq 'TAG_BLOCK_END') {
+	    $context->append_node();
+	    $not_done='';
+	    $no_shift=1;
+	    
 	} elsif($token eq 'HEADER_TAG' or
 	    $token eq 'HEADER_END') { # Handle headers
 	    
@@ -198,7 +201,24 @@ sub _parse_escape {
 	return;
     }
     
+    print "$token, $next_token $/";
+    # pop the next two tokens
+    shift @$tokens;
+    shift @$tokens;
 
+    use Data::Dumper;
+    print &Dumper($tokens->[0]);
+
+    # start parsing the tagged text
+    $context->append_node();
+
+    $context->append_node(
+	$self->_parse_internal(
+	  Markup::Tree->new(
+	      name => $txt,
+	      indent => $context->indent,
+	      inline => 1),
+	    $tokens), 1);
 }
 
 

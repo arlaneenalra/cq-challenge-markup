@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text name body node escape verbatim/;
+use fields qw/indent text name body node escape verbatim inline/;
 
 use base 'Markup::Base';
 
@@ -40,24 +40,22 @@ node to be appended
 =cut
 
 sub append_node {
-    my ($self, $node)=@_;
+    my ($self, $node, $inline)=@_;
 
     # do we have a simple or complex node
     if($node) {
-	# add a complex node
+       	# add a complex node
 	push @{$self->body}, $node;
 
-	# warn of possible syntax error
-	if($self->text) {
-	    warn 'Possible bad state while appending ' . 
-		$node->name . ' near : ' . $self->text;
-	}
-
     } else {
-	# add a simple node
-	push @{$self->body}, [
-	    $self->node => $self->text
-	];
+	if($self->inline) {
+	    push @{$self->body}, $self->text;
+	} else {
+	    # add a simple node
+	    push @{$self->body}, [
+		$self->node => $self->text
+	    ];
+	}
     }
     
 
@@ -105,6 +103,11 @@ Indicates the current level of indentation in.
 
 If this is set to true it indiciates that the content of this node 
 should be treated as pure text only.  (There are no child nodes.)
+
+=head2 inline
+
+If this is set to true, the indicated tag is treated as an inline tag 
+in the output
 
 =cut
 

@@ -27,15 +27,16 @@ sub string {
     my ($self, $tree)=@_;
     
     my $name=$tree->name;
+    my $text=$tree->text;
     my $string.='';
 
     # construct an indent block 
     my $indent= ' ' x (4 * int($tree->indent /2));
 
     if($tree->verbatim) {
-	$string=$indent . ($tree->text?"<$name>":"<$name/>");
-	$string.=$self->_encode_entities($tree->text);
-	$string.=$tree->text?"</$name>":'';
+	$string=$indent . ($text?"<$name>":"<$name/>");
+	$string.=$self->_encode_entities($text);
+	$string.=$text?"</$name>":'';
 
     } else {
 	# if we have no internals, start with an empty body
@@ -59,6 +60,10 @@ sub string {
 
 	    } elsif(ref $_) { # a complex tag
 		$string.=$self->string($_);
+
+	    } else { # we have a tag with inline content
+		$string.=$_;
+		
 	    }
 	    
 	}
