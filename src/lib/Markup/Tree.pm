@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text name body node escape verbatim backend/;
+use fields qw/indent text name body node escape verbatim/;
 
 use base 'Markup::Base';
 
@@ -81,82 +81,7 @@ sub default_values {
 	escape => '',
 	name => 'body',
 	verbatim => '',
-	backend => 'Markup::Backend::XML',
     };
-}
-
-=head2 string
-
-Process this tree using the given backend, it defaults to Markup::Backend::Xml
-
-=cut
-
-sub string {
-    my ($self, $backend)=@_;
-    
-    my $name=$self->name;
-    my $string.='';
-    
-    # construct an indent block 
-    my $indent= ' ' x (4 * int($self->indent /2));
-
-    if($self->verbatim) {
-	$string=$indent . ($self->text?"<$name>":"<$name/>");
-	$string.=$self->_encode_entities($self->text);
-	$string.=$self->text?"</$name>":'';
-
-    } else {
-	# if we have no internals, start with an empty body
-	$string=$indent . ((@{$self->body})?"<$name>$/":"<$name/>");
-
-	#TODO: Actually do something with the backend
-
-	foreach (@{$self->body}) {
-	    
-	    if(ref $_ eq 'ARRAY') { # simple tag
-		# handle a simple tag
-		my ($tag, $content)=@{$_};
-
-		# is there anything in this tag?
-		if($content) {
-		    $content=$self->_encode_entities($content);
-		    $string.="$indent    <$tag>$content</$tag>$/";
-		} else {
-		    $string.="$indent    <$tag/>$/";
-		}
-
-	    } elsif(ref $_) { # a complex tag
-		$string.=$_->string($backend);
-	    }
-	    
-	}
-
-
-	# did we have an empty body tag?
-	$string.=$indent . ((@{$self->body})?"</$name>":'');
-    }
-
-    # # convert indentations to 4 spaces
-    # $string=~s/\t/    /g;
-
-    return $string . $/;
-}
-
-=head2 _encode_entities
-
-Used by Markup::Backend::XML to encode content that contains special
-characters
-
-=cut
-
-sub _encode_entities {
-    my ($self, $content)=@_;
-
-    $content=~s/&/&amp;/g; # has to be done first
-    $content=~s/</&lt;/g;
-    $content=~s/>/&gt;/g;
-    
-    return $content;
 }
 
 =head1 FIELDS
@@ -180,10 +105,6 @@ Indicates the current level of indentation in.
 
 If this is set to true it indiciates that the content of this node 
 should be treated as pure text only.  (There are no child nodes.)
-
-=head2 backend
-
-The default backend used when string is called
 
 =cut
 

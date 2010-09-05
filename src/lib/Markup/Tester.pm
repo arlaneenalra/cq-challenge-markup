@@ -11,6 +11,7 @@ our @EXPORT=qw/run_test/;
 # Required for the test suite
 use Markup::Parser;
 use Markup::Tokenizer;
+use Markup::Backend::XML;
 use Markup::Util qw/slurp/;
 
 use Test::Simple tests => 1;
@@ -51,6 +52,7 @@ sub run_test {
     # each other in negative or positive manners
     my $tokenizer=Markup::Tokenizer->new();
     my $parser=Markup::Parser->new(tokenizer => $tokenizer);
+    my $backend=Markup::Backend::XML->new();
     
     my $xml=&slurp("$path.xml");
     my $source=&slurp("$path.txt");
@@ -60,7 +62,7 @@ sub run_test {
     
     # call our back end handler to convert 
     # to the simple xml format
-    my $output=$tree->string('Markup::Backend::Xml');
+    my $output=$backend->string($tree);
     
     # a naive approach to checking output
     ok($output eq $xml, "$test - Chcking Output");

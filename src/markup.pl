@@ -14,6 +14,7 @@ use Data::Dumper;
 
 use Markup::Parser;
 use Markup::Tokenizer;
+use Markup::Backend::XML;
 use Markup::Util qw/slurp/;
 
 
@@ -43,6 +44,7 @@ cat test.txt | markup.pl
 
 my $tokenizer=Markup::Tokenizer->new();
 my $parser=Markup::Parser->new(tokenizer => $tokenizer);
+my $backend=Markup::Backend::XML->new();
 
 # Do we have a file on the command line or should we be 
 # looking for a stream?
@@ -54,7 +56,7 @@ my $tree=$parser->parse($source);
 # DEBUG: output the tree with data dumper
 print &Dumper($tree);
 
-print $tree->string();
+print $backend->string($tree);
 
 =head1 INTERNALS
 
