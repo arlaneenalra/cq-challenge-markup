@@ -40,7 +40,11 @@ sub string {
 
     } else {
 	# if we have no internals, start with an empty body
-	$string=$indent . ((@{$tree->body})?"<$name>$/":"<$name/>");
+	if($tree->inline) {
+	    $string=$indent . ((@{$tree->body})?"<$name>":"<$name/>");
+	} else {
+	    $string=$indent . ((@{$tree->body})?"<$name>$/":"<$name/>");
+	}
 
 	#TODO: Actually do something with the backend
 
@@ -68,15 +72,17 @@ sub string {
 	    
 	}
 
-
 	# did we have an empty body tag?
 	$string.=$indent . ((@{$tree->body})?"</$name>":'');
     }
 
     # # convert indentations to 4 spaces
     # $string=~s/\t/    /g;
+    unless($tree->inline) {
+	$string.=$/;
+    }
 
-    return $string . $/;
+    return $string;
 }
 
 

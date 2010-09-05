@@ -116,7 +116,7 @@ sub _parse_internal {
 	} elsif($token eq 'TAG_BLOCK_END') {
 	    $context->append_node();
 	    $not_done='';
-	    $no_shift=1;
+	    #$no_shift=1;
 	    
 	} elsif($token eq 'HEADER_TAG' or
 	    $token eq 'HEADER_END') { # Handle headers
@@ -210,9 +210,9 @@ sub _parse_escape {
     print &Dumper($tokens->[0]);
 
     # start parsing the tagged text
-    $context->append_node();
+    #$context->append_node();
 
-    $context->append_node(
+    $context->append_text(
 	$self->_parse_internal(
 	  Markup::Tree->new(
 	      name => $txt,
