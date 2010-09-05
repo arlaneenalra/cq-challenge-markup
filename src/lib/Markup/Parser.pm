@@ -101,9 +101,16 @@ sub _parse_internal {
 		$context->append_node();
 	    }
 
-    	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
+    	} elsif($token eq 'ORDERED_LIST'
+		or $token eq 'UNORDERED_LIST') { # Handle various kinds of lists
+	    
+	    $self->_parse_list($context, $tokens);
+
+	    $no_shift=1;
+	    
+	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
-	    $self->_parse_escape($context, @$tokens);
+	    $self->_parse_escape($context, $tokens);
 
 	} elsif($token eq 'HEADER_TAG' or
 	    $token eq 'HEADER_END') { # Handle headers
@@ -130,6 +137,46 @@ sub _parse_internal {
 
     return $context;
 }
+
+=head2 _parse_list
+
+Handles aggregation of list items
+
+=cut
+
+sub _parse_list {
+    my ($self, $context, $tokens)=@_;
+
+    my ($token, $tst)=@{$tokens->[0]};
+
+    # determine what kind of list item we have
+    my $list_type=$token eq 'ORDERED_LIST' ? 'ol' : 'ul';
+
+    # Are we already processing a list of this type ?
+    if($context->name eq $list_type) {
+	
+	# process the list tag and start a new list item
+	shift @{$tokens};
+	
+	$context->append_node(
+	    $self->_parse_internal(
+		Markup::Tree->new(
+		    name => 'li',
+		    indent => $context->indent+4),
+		$tokens));
+
+	return;
+    }
+
+    # we are not processing a list, time to start one
+    $context->append_node(
+    	$self->_parse_internal(
+    	    Markup::Tree->new(
+    		name => $list_type, # properly tag the list
+    		indent => $context->indent),
+    	    $tokens));
+}
+
 
 =head2 _parse_verbatim
 
@@ -265,7 +312,7 @@ sub _parse_indent {
 
 =head2 _parse_header
 
-parses a chain of header '*' characters 
+Parses a chain of header '*' characters to into a header 
 
 =cut
 
