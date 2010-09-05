@@ -8,6 +8,8 @@ use base 'Markup::Base';
 
 # Definition of the various tokens 
 my @token_patterns=(
+    [qr(-\*-.*-\*-) => 'EMACS_MODE'], # Match this so we can ignore it
+
     [qr(\* ) => 'HEADER_END'], # Matches the end of a header 
     [qr(\*) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
 
@@ -42,6 +44,7 @@ my %token_rules=(
 
     'END_OF_PARAGRAPH' => [qw/+ANY+ +DELETE+/],
     'END_OF_LINE' => [qw/+ANY+ +DELETE+/],
+    'EMACS_MODE' => [qw/+DELETE+/],
     );
 
 =head1 NAME
@@ -62,9 +65,6 @@ which can then be used to provide structure to our content.
 
 sub tokenize {
     my ($self, $content)=@_;
-    
-    # Strip emacs mode marker
-    $content=~s/-\*-.*-\*-//;
     
     # Loop until there is not more content to match
     my @tokens;
