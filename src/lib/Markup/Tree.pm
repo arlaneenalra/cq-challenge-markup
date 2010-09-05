@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text name body node escape verbatim/;
+use fields qw/indent text name body node escape verbatim backend/;
 
 use base 'Markup::Base';
 
@@ -81,6 +81,7 @@ sub default_values {
 	escape => '',
 	name => 'body',
 	verbatim => '',
+	backend => 'Markup::Backend::XML',
     };
 }
 
@@ -95,15 +96,18 @@ sub string {
     
     my $name=$self->name;
     my $string.='';
+    
+    # construct an indent block 
+    my $indent= ' ' x (4 * int($self->indent /2));
 
     if($self->verbatim) {
-	$string=$self->text?"<$name>":"<$name/>";
+	$string=$indent . ($self->text?"<$name>":"<$name/>");
 	$string.=$self->text;
 	$string.=$self->text?"</$name>":'';
 
     } else {
 	# if we have no internals, start with an empty body
-	$string=(@{$self->body})?"<$name>$/":"<$name/>";
+	$string=$indent . ((@{$self->body})?"<$name>$/":"<$name/>");
 
 	#TODO: Actually do something with the backend
 
@@ -115,28 +119,24 @@ sub string {
 
 		# is there anything in this tag?
 		if($content) {
-		    $string.="\t<$tag>$content</$tag>$/";
+		    $string.="$indent    <$tag>$content</$tag>$/";
 		} else {
-		    $string.="\t<$tag/>$/";
+		    $string.="$indent    <$tag/>$/";
 		}
 
 	    } elsif(ref $_) { # a complex tag
-		my $temp=$_->string($backend);
-		# indent everything one more time
-		$temp=~s/^/\t/gm;
-		
-		$string.=$temp;   
+		$string.=$_->string($backend);
 	    }
 	    
 	}
 
 
 	# did we have an empty body tag?
-	$string.=(@{$self->body})?"</$name>":'';
+	$string.=$indent . ((@{$self->body})?"</$name>":'');
     }
 
-    # convert indentations to 4 spaces
-    $string=~s/\t/    /g;
+    # # convert indentations to 4 spaces
+    # $string=~s/\t/    /g;
 
     return $string . $/;
 }
@@ -162,6 +162,10 @@ Indicates the current level of indentation in.
 
 If this is set to true it indiciates that the content of this node 
 should be treated as pure text only.  (There are no child nodes.)
+
+=head2 backend
+
+The default backend used when string is called
 
 =cut
 
