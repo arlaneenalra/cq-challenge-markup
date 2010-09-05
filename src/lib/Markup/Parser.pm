@@ -107,7 +107,7 @@ sub _parse_internal {
     	} elsif($token eq 'ORDERED_LIST'
 		or $token eq 'UNORDERED_LIST') { # Handle various kinds of lists
 	    
-	    $self->_parse_list($context, $tokens);
+	    $no_shift=$self->_parse_list($context, $tokens);
 	    
 	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
@@ -167,7 +167,7 @@ sub _parse_list {
 		    indent => $context->indent+2),
 		$tokens));
 
-	return;
+	return '';
     }
 
     # this node should look like a block quote
@@ -177,7 +177,9 @@ sub _parse_list {
 
     # replace the a blockquote node with the list we are currently parsing  
     $context->name=$list_type;
-    $context->indent+2;
+    $context->indent+=2;
+
+    return 1;
 }
 
 =head2 _parse_escape
