@@ -168,18 +168,14 @@ sub _parse_list {
 	return;
     }
 
-    # # we are not processing a list, time to start one
-    # $context->append_node(
-    # 	$self->_parse_internal(
-    # 	    Markup::Tree->new(
-    # 		name => $list_type, # properly tag the list
-    # 		indent => $context->indent),
-    # 	    $tokens));
-    
-    if($context->name eq 'blockquote') {
-    	$context->name=$list_type;
-	$context->indent+2;
+    # this node should look like a block quote
+    if($context->name ne 'blockquote') {
+	warn 'Potentially bad state near ' . $context->text;
     }
+
+    # replace the a blockquote node with the list we are currently parsing  
+    $context->name=$list_type;
+    $context->indent+2;
 }
 
 
