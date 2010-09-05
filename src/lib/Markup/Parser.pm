@@ -110,16 +110,15 @@ sub _parse_internal {
 	    $self->_parse_list($context, $tokens);
 
 	    $no_shift=1;
-	    #$not_done='';
 	    
 	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
-	    $self->_parse_escape($context, $tokens);
+	    $no_shift=$self->_parse_escape($context, $tokens);
 
 	} elsif($token eq 'HEADER_TAG' or
 	    $token eq 'HEADER_END') { # Handle headers
 	    
-	    $no_shift=$self->_parse_header($context,$tokens);
+	    $self->_parse_header($context,$tokens);
 
 	} elsif($token eq 'INDENT') { # Handle a block quote
 
@@ -147,7 +146,7 @@ Handles aggregation of list items
 sub _parse_list {
     my ($self, $context, $tokens)=@_;
 
-    my ($token, $tst)=@{$tokens->[0]};
+    my ($token, $txt)=@{$tokens->[0]};
 
     # determine what kind of list item we have
     my $list_type=$token eq 'ORDERED_LIST' ? 'ol' : 'ul';
@@ -176,6 +175,30 @@ sub _parse_list {
     # replace the a blockquote node with the list we are currently parsing  
     $context->name=$list_type;
     $context->indent+2;
+}
+
+=head2 _parse_escape
+
+Handles tagged markup and escaping via \
+
+=cut
+sub _parse_escape {
+    my ($self, $context, $tokens)=@_;
+
+    # move to the next token and take a look at them
+    shift @$tokens;
+
+    my ($token, $txt, $next_token, $next_txt)=
+	(@{$tokens->[0]}, @{$tokens->[1]});
+
+    # we have a normal escape here
+    if($next_token ne 'TAG_BLOCK_START') {
+	$context->append_text($txt);
+
+	return;
+    }
+    
+
 }
 
 
