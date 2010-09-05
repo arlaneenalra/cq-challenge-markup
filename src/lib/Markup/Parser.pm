@@ -271,6 +271,8 @@ sub _parse_verbatim {
 	    shift @$tokens;
 	}
     }
+    
+    $context->append_node();
 
     return $context;
 }

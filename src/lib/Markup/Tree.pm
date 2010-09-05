@@ -49,7 +49,8 @@ sub append_node {
 	push @{$self->body}, $node;
 
     } else {
-	if($self->inline) {
+	if($self->inline
+	    or $self->verbatim) {
 	    $self->body = $self->text;
 	} else {
 	    # add a simple node

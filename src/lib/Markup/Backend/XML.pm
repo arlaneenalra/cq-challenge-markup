@@ -29,21 +29,23 @@ sub string {
     my ($self, $tree, $indent_val)=@_;
     
     my $name=$tree->name;
-    my $text=$tree->text;
     my $string.='';
 
     # make sure that $extra_indent is a number
     $indent_val=defined($indent_val)?$indent_val:0;
     
-    # if we do not have a container tag, indent
-    unless($container{$name}) {
-	$indent_val+=1;
-    }
+    # # if we do not have a container tag, indent
+    # unless($container{$name}) {
+    # 	$indent_val+=1;
+    # }
 
     # construct an indent block 
-    my $indent= ' ' x (2 * $indent_val);
+    my $indent= ' ' x (4 * $indent_val);
+
 
     if($tree->verbatim) {
+	my $text=join '', @{$tree->body};
+
 	$string=$indent . ($text?"<$name>":"<$name/>");
 	$string.=$self->_encode_entities($text);
 	$string.=$text?"</$name>":'';
@@ -78,8 +80,8 @@ sub string {
 		$string.=$self->string($_, $indent_val+1);
 
 	    } else { # we have a tag with inline content
-		$string.=$_;
-		
+		$string.=$self->_encode_entities($_);
+
 	    }
 	    
 	}
