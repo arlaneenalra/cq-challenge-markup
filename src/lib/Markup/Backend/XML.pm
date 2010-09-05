@@ -24,22 +24,13 @@ Convert the passed in Markup::Tree structure into a xml string.
 =cut
 
 sub string {
-    my ($self, $tree, $extra_indent)=@_;
+    my ($self, $tree)=@_;
     
     my $name=$tree->name;
     my $string.='';
 
-    # make sure that extra indent is a number
-    $extra_indent=defined($extra_indent)?$extra_indent:0;
-
-    # handle list items needing extra indentation
-    if($name eq 'ol'
-	or $name eq 'ul') {
-	$extra_indent+=1;
-    }
-    
     # construct an indent block 
-    my $indent= ' ' x (4 * (int($tree->indent /2) + $extra_indent));
+    my $indent= ' ' x (4 * int($tree->indent /2));
 
     if($tree->verbatim) {
 	$string=$indent . ($tree->text?"<$name>":"<$name/>");

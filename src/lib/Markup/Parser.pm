@@ -154,7 +154,6 @@ sub _parse_list {
 
     # Are we already processing a list of this type ?
     if($context->name eq $list_type) {
-	print "LI " . $context->indent . $/;
 	
 	# process the list tag and start a new list item
 	shift @{$tokens};
@@ -163,7 +162,7 @@ sub _parse_list {
 	    $self->_parse_internal(
 		Markup::Tree->new(
 		    name => 'li',
-		    indent => $context->indent+4),
+		    indent => $context->indent+2),
 		$tokens));
 
 	return;
@@ -178,7 +177,8 @@ sub _parse_list {
     # 	    $tokens));
     
     if($context->name eq 'blockquote') {
-	$context->name=$list_type;
+    	$context->name=$list_type;
+	$context->indent+2;
     }
 }
 
