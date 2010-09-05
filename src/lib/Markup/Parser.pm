@@ -35,7 +35,7 @@ sub parse {
 
     # Convert the content into a stream of tokens
     my @tokens=$self->tokenizer->tokenize($content);
-    
+
     use Data::Dumper;
     print &Dumper(\@tokens);
 
@@ -201,13 +201,9 @@ sub _parse_escape {
 	return;
     }
     
-    print "$token, $next_token $/";
     # pop the next two tokens
     shift @$tokens;
     shift @$tokens;
-
-    use Data::Dumper;
-    print &Dumper($tokens->[0]);
 
     # start parsing the tagged text
     #$context->append_node();

@@ -26,22 +26,22 @@ Convert the passed in Markup::Tree structure into a xml string.
 =cut
 
 sub string {
-    my ($self, $tree, $extra_indent)=@_;
+    my ($self, $tree, $indent_val)=@_;
     
     my $name=$tree->name;
     my $text=$tree->text;
     my $string.='';
 
     # make sure that $extra_indent is a number
-    $extra_indent=defined($extra_indent)?$extra_indent:0;
+    $indent_val=defined($indent_val)?$indent_val:0;
     
     # if we do not have a container tag, indent
     unless($container{$name}) {
-	$extra_indent+=1;
+	$indent_val+=1;
     }
 
     # construct an indent block 
-    my $indent= ' ' x (4 * (int($tree->indent /2) + $extra_indent));
+    my $indent= ' ' x (2 * $indent_val);
 
     if($tree->verbatim) {
 	$string=$indent . ($text?"<$name>":"<$name/>");
@@ -57,24 +57,25 @@ sub string {
 	    $string.=$/;
 	}
 
-	#TODO: Actually do something with the backend
 
+	# walk all of the nodes in this nodes body
 	foreach (@{$tree->body}) {
 	    
-	    if(ref $_ eq 'ARRAY') { # simple tag
-		# handle a simple tag
-		my ($tag, $content)=@{$_};
+	    # if(ref $_ eq 'ARRAY') { # simple tag
+	    # 	# handle a simple tag
+	    # 	my ($tag, $content)=@{$_};
 
-		# is there anything in this tag?
-		if($content) {
-		    $content=$self->_encode_entities($content);
-		    $string.="$indent    <$tag>$content</$tag>$/";
-		} else {
-		    $string.="$indent    <$tag/>$/";
-		}
+	    # 	# is there anything in this tag?
+	    # 	if($content) {
+	    # 	    $content=$self->_encode_entities($content);
+	    # 	    $string.="$indent    <$tag>$content</$tag>$/";
+	    # 	} else {
+	    # 	    $string.="$indent    <$tag/>$/";
+	    # 	}
 
-	    } elsif(ref $_) { # a complex tag
-		$string.=$self->string($_, $extra_indent);
+	    # } els
+	    if(ref $_) { # a complex tag
+		$string.=$self->string($_, $indent_val+1);
 
 	    } else { # we have a tag with inline content
 		$string.=$_;
@@ -83,16 +84,17 @@ sub string {
 	    
 	}
 	
-	unless($extra_indent) {
+	# did we have an empty body tag?
+	if($container{$name}) {
 	    $string.=$indent;
 	}
-	# did we have an empty body tag?
-	$string.=(@{$tree->body})?"</$name>":'';
+
+	$string.=((@{$tree->body})?"</$name>":'');
     }
 
-    # # convert indentations to 4 spaces
-    # $string=~s/\t/    /g;
-    unless($tree->inline) {
+    # inline and empty tags to not get a $/ after them
+    unless($tree->inline
+	or !@{$tree->body}) {
 	$string.=$/;
     }
 
