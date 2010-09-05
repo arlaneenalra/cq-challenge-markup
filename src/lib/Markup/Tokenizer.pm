@@ -27,16 +27,21 @@ my @token_patterns=(
     
     [qr/   */ => 'INDENT'], # Matches 2 or more leading spaces 
     
-    [qr($/\s*$/) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
+    [qr($/\s*($/)+) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
     [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
     );
 
 # list tokens that may only appear after certain other tokens
+# +ANY+ means it must follow a token and +DELETE+ means, to 
+# remove the token rather than converting it to a text token
 my %token_rules=(
-    'HEADER_END' => [qw/HEADER_TAG INDENT END_OF_LINE END_OF_PARAGRAPH/],
+    'HEADER_END' => [qw/+UNDEF+ HEADER_TAG INDENT END_OF_LINE END_OF_PARAGRAPH/],
     'UNORDERED_LIST' => [qw/INDENT/],
     'ORDERED_LIST' => [qw/INDENT/],
-    'INDENT' => [qw/END_OF_LINE END_OF_PARAGRAPH/],
+    'INDENT' => [qw/+UNDEF+ END_OF_LINE END_OF_PARAGRAPH/],
+
+    'END_OF_PARAGRAPH' => [qw/+ANY+ +DELETE+/],
+    'END_OF_LINE' => [qw/+ANY+ +DELETE+/],
     );
 
 =head1 NAME
@@ -69,28 +74,53 @@ sub tokenize {
 	# Retrieve a token and add it to our
 	# list of tokens
 	my ($token, $txt)=$self->next_token($content);
+
+	my $delete='';
+	my $match=1;
 	
 	# strip matched text from the front of our content
 	$content=substr $content, length $txt;
 
 	# check for special case tokens
-	if($token_rules{$token}
-	    and defined($last_token)) {
+	if($token_rules{$token}) {
 	    
 	    # look for any matching rules
-	    my @match=grep { $last_token eq $_ } @{$token_rules{$token}};
+	    $match=grep { 
+
+		(defined($last_token) and
+		    ($last_token eq $_ or $_ eq '+ANY+'))
+
+		    or (!defined($last_token) and
+			$_ eq '+UNDEF+')
+
+	    } @{$token_rules{$token}};
+
+	    # should this token be deleted?
+	    $delete=grep {
+		$_ eq '+DELETE+'
+	    } @{$token_rules{$token}};
 	    
-	    unless(@match) {
+	    # we only do the delete if we didn't match
+	    $delete=($delete and !$match);
+	    
+	    unless($match) {
 		# convert special case tokens to plain text
 		$token='';
 	    }
 	}
-	
-	$last_token=$token;
-	push @tokens, [$token, $txt];
+
+	print $/;
+
+	# Should we completely ignore this token?
+	unless($delete) {
+	    $last_token=$token;
+	    push @tokens, [$token, $txt];
+	}
 
     }
     
+    use Data::Dumper;
+    print &Dumper(\@tokens);
     return @tokens;
 }
 
