@@ -22,10 +22,10 @@ my @token_patterns=(
     # [qr(\]) => 'LINK_BLOCK_END'], # Match the end of a link block
 
     
-    [qr(  - ) => 'UNORDERED_LIST'], # Matches an unordered list
-    [qr(  # ) => 'ORDERED_LIST'], # Matches an ordered list
+    [qr(- ) => 'UNORDERED_LIST'], # Matches an unordered list
+    [qr(# ) => 'ORDERED_LIST'], # Matches an ordered list
     
-    [qr/   *((?=  # )|(?=  - ))?/ => 'INDENT'], # Matches 2 or more leading spaces 
+    [qr/   */ => 'INDENT'], # Matches 2 or more leading spaces 
     
     [qr($/\s*$/) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
     [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
