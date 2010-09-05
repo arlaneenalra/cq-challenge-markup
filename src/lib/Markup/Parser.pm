@@ -35,6 +35,9 @@ sub parse {
 
     # Convert the content into a stream of tokens
     my @tokens=$self->tokenizer->tokenize($content);
+    
+    use Data::Dumper;
+    print &Dumper(\@tokens);
 
     # Parse our token stream
     return $self->_parse_internal(Markup::Tree->new(), \@tokens);
@@ -107,6 +110,7 @@ sub _parse_internal {
 	    $self->_parse_list($context, $tokens);
 
 	    $no_shift=1;
+	    #$not_done='';
 	    
 	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
@@ -131,10 +135,6 @@ sub _parse_internal {
 	}
     }
 
-
-    # do a final append for the given node
-    #$context->append_node();
-
     return $context;
 }
 
@@ -154,6 +154,7 @@ sub _parse_list {
 
     # Are we already processing a list of this type ?
     if($context->name eq $list_type) {
+	print "LI " . $context->indent . $/;
 	
 	# process the list tag and start a new list item
 	shift @{$tokens};
