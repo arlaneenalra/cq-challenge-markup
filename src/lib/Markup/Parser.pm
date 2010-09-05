@@ -36,8 +36,6 @@ sub parse {
     # Convert the content into a stream of tokens
     my @tokens=$self->tokenizer->tokenize($content);
 
-    use Data::Dumper;
-    print &Dumper(\@tokens);
 
     # Parse our token stream
     return $self->_parse_internal(Markup::Tree->new(), \@tokens);
@@ -304,7 +302,6 @@ sub _parse_indent {
     # how different than the current indention are we?
     my $diff=$count - $context->indent;
 
-
     # do we have a new indentation level?
     if($diff == 0) {
 	# we are at the same indent level, do nothing
@@ -325,10 +322,11 @@ sub _parse_indent {
 	    # blockquote
     	    $context->append_node(
 	    	$self->_parse_internal(
-	    	    Markup::Tree->new(
-	    		name => 'blockquote',
-	    		indent => $context->indent+2),
+		    Markup::Tree->new(
+			name => 'blockquote',
+			indent => $context->indent+2),
 	    	    $tokens));
+
 	    return (1,1);
 
 	} elsif($diff >= 3) {
@@ -349,6 +347,15 @@ sub _parse_indent {
 	
 	# no_shift won't propgate to parent scope
 	# so we do this to avoid getting shifted
+
+	# lists need to dedent twice
+	if($context->name eq 'li'
+	    and $diff < -2) {
+	    
+	    #print "$token$/";
+	    unshift @$tokens, [$token,$txt]; ;	    
+	}
+
 	unshift @$tokens, ['','']; 
 	return ('','');
     }
