@@ -73,7 +73,7 @@ sub _parse_internal {
 	    $context->append_text($txt);
 
 	} elsif($token eq 'END_OF_LINE'
-	    or $token eq 'END_OF_PARAGRAPH') { # Handle a single eol 
+		or $token eq 'END_OF_PARAGRAPH') { # Handle a single eol 
 	    
 	    ($not_done, $no_shift)=$self->_parse_eol($context,$tokens);
 
@@ -85,11 +85,16 @@ sub _parse_internal {
 	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
 	    $no_shift=$self->_parse_escape($context, $tokens);
-
+	    
 	} elsif($token eq 'TAG_BLOCK_END') {
+
 	    $context->append_node();
 	    $not_done='';
-	    #$no_shift=1;
+
+	    if($context->indent) {
+		($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+	    }
+	    
 	    
 	} elsif($token eq 'HEADER_TAG' or
 	    $token eq 'HEADER_END') { # Handle headers
@@ -128,7 +133,7 @@ sub _parse_eol {
     my ($token, $txt)=@{$tokens->[0]};
 
     # are there any more tokens?
-    if(@$tokens >1) {
+    if(@$tokens > 1) {
 
 	# if we are at an end of line, convert it to a space
 	$context->append_text(' ')
