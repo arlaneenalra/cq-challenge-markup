@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text name body node escape verbatim inline/;
+use fields qw/indent text name body node escape verbatim inline subdocument/;
 
 use base 'Markup::Base';
 
@@ -74,13 +74,14 @@ Setup sane defaults.
 sub default_values {
 
     return {
-	indent =>0,
+	indent => 0,
 	text => [],
 	body => [],
 	node => 'p',
 	escape => '',
 	name => 'body',
 	verbatim => '',
+	subdocument => '',
     };
 }
 
@@ -110,6 +111,11 @@ should be treated as pure text only.  (There are no child nodes.)
 
 If this is set to true, the indicated tag is treated as an inline tag 
 in the output
+
+=head2 subdocument
+
+If set to true while inline is true, this node should be treated as a
+subdocument node.
 
 =cut
 

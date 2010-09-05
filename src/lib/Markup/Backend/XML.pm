@@ -6,7 +6,7 @@ use base 'Markup::Base';
 
 # list of tags that are considered containers and need to have
 # a $/ after the opening tag
-my %container = map { $_ => 1 } qw/body blockquote ol ul li/;
+my %container = map { $_ => 1 } qw/body blockquote ol ul li note/;
 
 =head1 NAME
 
@@ -34,10 +34,12 @@ sub string {
     # make sure that $extra_indent is a number
     $indent_val=defined($indent_val)?$indent_val:0;
     
-    # # if we do not have a container tag, indent
-    # unless($container{$name}) {
-    # 	$indent_val+=1;
-    # }
+    # we need to add an extra newline for subdocuments
+    if($tree->subdocument) {
+	$string.=$/;
+	$indent_val-=1; # remove the extraneous indent added 
+    }
+
 
     # construct an indent block 
     my $indent= ' ' x (4 * $indent_val);
@@ -67,19 +69,6 @@ sub string {
 	# walk all of the nodes in this nodes body
 	foreach (@{$tree->body}) {
 	    
-	    # if(ref $_ eq 'ARRAY') { # simple tag
-	    # 	# handle a simple tag
-	    # 	my ($tag, $content)=@{$_};
-
-	    # 	# is there anything in this tag?
-	    # 	if($content) {
-	    # 	    $content=$self->_encode_entities($content);
-	    # 	    $string.="$indent    <$tag>$content</$tag>$/";
-	    # 	} else {
-	    # 	    $string.="$indent    <$tag/>$/";
-	    # 	}
-
-	    # } els
 	    if(ref $_) { # a complex tag
 		$string.=$self->string($_, $indent_val+1);
 
@@ -102,6 +91,11 @@ sub string {
     unless($tree->inline
 	or (!@{$tree->body} and $container{$name})) {
 	$string.=$/;
+    }
+    
+    # properly indent the next line
+    if($tree->subdocument) {
+	$string.=$indent;
     }
 
     return $string;

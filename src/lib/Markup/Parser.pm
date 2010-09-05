@@ -8,6 +8,8 @@ use base 'Markup::Base';
 
 use Markup::Tree;
 
+my %subdocument_node = map { $_ => 1 } qw/note/;
+
 =head1 NAME
 
 Markup::Parser - Base class for Markup parsers.
@@ -234,7 +236,9 @@ sub _parse_escape {
 	  Markup::Tree->new(
 	      name => $txt,
 	      indent => $context->indent,
-	      inline => 1),
+	      inline => !$subdocument_node{$txt},
+	      subdocument => $subdocument_node{$txt}, # is this a subdocument node?
+	    ),
 	    $tokens), 1);
 }
 
