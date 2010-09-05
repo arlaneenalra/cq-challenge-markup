@@ -29,7 +29,7 @@ sub string {
     my ($self, $tree, $indent_val)=@_;
     
     my $name=$tree->name;
-    my $string.='';
+    my $string='';
 
     # make sure that $extra_indent is a number
     $indent_val=defined($indent_val)?$indent_val:0;
@@ -42,17 +42,21 @@ sub string {
     # construct an indent block 
     my $indent= ' ' x (4 * $indent_val);
 
+    unless($tree->inline) {
+	$string.=$indent;
+    }
+
 
     if($tree->verbatim) {
 	my $text=join '', @{$tree->body};
 
-	$string=$indent . ($text?"<$name>":"<$name/>");
+	$string.=($text?"<$name>":"<$name/>");
 	$string.=$self->_encode_entities($text);
 	$string.=$text?"</$name>":'';
 
     } else {
 	# if we have no internals, start with an empty body
-	$string=$indent . ((@{$tree->body})?"<$name>":"<$name/>");
+	$string.=((@{$tree->body})?"<$name>":"<$name/>");
 	
 	# put a $/ after opening container tags
 	if($container{$name}) {
