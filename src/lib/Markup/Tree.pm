@@ -102,7 +102,7 @@ sub string {
 
     if($self->verbatim) {
 	$string=$indent . ($self->text?"<$name>":"<$name/>");
-	$string.=$self->text;
+	$string.=$self->_encode_entities($self->text);
 	$string.=$self->text?"</$name>":'';
 
     } else {
@@ -119,6 +119,7 @@ sub string {
 
 		# is there anything in this tag?
 		if($content) {
+		    $content=$self->_encode_entities($content);
 		    $string.="$indent    <$tag>$content</$tag>$/";
 		} else {
 		    $string.="$indent    <$tag/>$/";
@@ -139,6 +140,23 @@ sub string {
     # $string=~s/\t/    /g;
 
     return $string . $/;
+}
+
+=head2 _encode_entities
+
+Used by Markup::Backend::XML to encode content that contains special
+characters
+
+=cut
+
+sub _encode_entities {
+    my ($self, $content)=@_;
+
+    $content=~s/&/&amp;/g; # has to be done first
+    $content=~s/</&lt;/g;
+    $content=~s/>/&gt;/g;
+    
+    return $content;
 }
 
 =head1 FIELDS
