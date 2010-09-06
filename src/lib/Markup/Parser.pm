@@ -67,6 +67,8 @@ sub _parse_internal {
 
 	my $no_shift=''; # set to true if a shift is not needed
 
+	print "$token$/";
+
 	# TODO: this might be better handled as a hash
 
 	if($token eq '') { # Handle simple text
@@ -105,6 +107,9 @@ sub _parse_internal {
 
 	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
 	    	    
+	} elsif($token eq 'DEDENT') { # Handle list dedent
+	    $not_done='';
+
 	} else { # Catch all to be for use during implementation
 	    warn "Unhandled token: $token";
 	}
@@ -226,7 +231,7 @@ sub _parse_escape {
     if($next_token ne 'TAG_BLOCK_START') {
 	$context->append_text($txt);
 
-	return;
+	return '';
     }
     
     # pop the next two tokens
@@ -245,6 +250,7 @@ sub _parse_escape {
 	      subdocument => $subdocument_node{$txt}, # is this a subdocument node?
 	    ),
 	    $tokens), 1);
+    return 1;
 }
 
 
@@ -357,6 +363,7 @@ sub _parse_indent {
 			indent => $context->indent+2),
 	    	    $tokens));
 
+
 	    return (1,1);
 
 	} elsif($diff >= 3) {
@@ -383,10 +390,11 @@ sub _parse_indent {
 	    and $diff < -2) {
 	    
 	    #print "$token$/";
-	    unshift @$tokens, [$token,$txt]; ;	    
+	    unshift @$tokens, ['DEDENT',$txt];
+	    unshift @$tokens, ['DEDENT',$txt];
 	}
 
-	unshift @$tokens, ['','']; 
+	unshift @$tokens, ['',''];
 	return ('','');
     }
 }
