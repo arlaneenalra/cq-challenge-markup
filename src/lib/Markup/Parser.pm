@@ -120,6 +120,10 @@ sub _parse_internal {
 	}
     }
 
+    if(@{$context->text}) {
+	$context->append_node();
+    }
+
     return $context;
 }
 
@@ -282,7 +286,8 @@ sub _parse_verbatim {
 	if($token eq 'INDENT') { # Handle a block quote
 	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
 	    
-	} elsif($token eq 'END_OF_LINE') {
+	} elsif($token eq 'END_OF_LINE'
+	    or $token eq 'END_OF_PARAGRAPH') {
 
 	    if(@$tokens>1) {
 
