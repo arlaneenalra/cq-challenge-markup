@@ -108,8 +108,6 @@ sub tokenize {
 	    }
 	}
 
-	print $/;
-
 	# Should we completely ignore this token?
 	unless($delete) {
 	    $last_token=$token;
