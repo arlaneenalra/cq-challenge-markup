@@ -38,7 +38,6 @@ sub parse {
     # Convert the content into a stream of tokens
     my @tokens=$self->tokenizer->tokenize($content);
 
-
     # Parse our token stream
     return $self->_parse_internal(Markup::Tree->new(), \@tokens);
 }

@@ -53,9 +53,6 @@ my $source=@ARGV ? &slurp($ARGV[0]) : &slurp(\*STDIN);
 # parse the source
 my $tree=$parser->parse($source);
 
-# DEBUG: output the tree with data dumper
-print &Dumper($tree);
-
 print $backend->string($tree);
 
 =head1 INTERNALS
