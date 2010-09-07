@@ -43,7 +43,7 @@ my %token_rules=(
 
     'END_OF_PARAGRAPH' => [qw/+ANY+ +DELETE+/],
     'END_OF_LINE' => [qw/+ANY+ +DELETE+/],
-    'EMACS_MODE' => [qw/+DELETE+/],
+    'EMACS_MODE' => [qw/+ANY+ +DELETE+/],
     );
 
 =head1 NAME
