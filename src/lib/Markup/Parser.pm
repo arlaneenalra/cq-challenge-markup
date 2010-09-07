@@ -67,8 +67,6 @@ sub _parse_internal {
 
 	my $no_shift=''; # set to true if a shift is not needed
 
-	print "$token$/";
-
 	# TODO: this might be better handled as a hash
 
 	if($token eq '') { # Handle simple text
@@ -103,8 +101,7 @@ sub _parse_internal {
 	    }
 	    
 	    
-	} elsif($token eq 'HEADER_TAG' or
-	    $token eq 'HEADER_END') { # Handle headers
+	} elsif($token eq 'HEADER_TAG') { # Handle headers
 	    
 	    $self->_parse_header($context,$tokens);
 
@@ -400,7 +397,6 @@ sub _parse_indent {
 	if($context->name eq 'li'
 	    and $diff < -2) {
 	    
-	    #print "$token$/";
 	    unshift @$tokens, ['DEDENT',$txt];
 	    unshift @$tokens, ['DEDENT',$txt];
 	}
@@ -419,27 +415,12 @@ Parses a chain of header '*' characters to into a header
 sub _parse_header {
     my ($self, $context, $tokens)=@_;
     
-    my $depth=1; # track header depth
     my $no_shift='';
     
     my ($token, $txt)=@{$tokens->[0]};
-    # figure out how deep a header we have
-    while($token eq 'HEADER_TAG') {
-	$depth++;
 
-	# move to the next tag
-	shift @$tokens;
-	($token, $txt)=@{$tokens->[0]};	
-    }
-
-    # do we have a valid header end tag?
-    if($token ne 'HEADER_END') {
-	warn "Bad $depth deep header near $token token containing '$txt'";
-
-	$no_shift=1; # attempt to keep going
-
-	$depth--; # we assume the HEADER_END up front
-    }
+    my $depth=split '\*', $txt; # track header depth
+    $depth--; # headers have one space following them.
 
     $context->node="h$depth";
     

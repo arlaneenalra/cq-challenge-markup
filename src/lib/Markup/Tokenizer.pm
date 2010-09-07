@@ -10,8 +10,7 @@ use base 'Markup::Base';
 my @token_patterns=(
     [qr(-\*-.*-\*-) => 'EMACS_MODE'], # Match this so we can ignore it
 
-    [qr(\* ) => 'HEADER_END'], # Matches the end of a header 
-    [qr(\*) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
+    [qr(\*\** ) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
 
     # TODO:  Add link processing
 
@@ -37,7 +36,7 @@ my @token_patterns=(
 # +ANY+ means it must follow a token and +DELETE+ means, to 
 # remove the token rather than converting it to a text token
 my %token_rules=(
-    'HEADER_END' => [qw/+UNDEF+ HEADER_TAG INDENT END_OF_LINE END_OF_PARAGRAPH/],
+    'HEADER_TAG' => [qw/+UNDEF+ INDENT END_OF_LINE END_OF_PARAGRAPH/],
     'UNORDERED_LIST' => [qw/INDENT/],
     'ORDERED_LIST' => [qw/INDENT/],
     'INDENT' => [qw/+UNDEF+ END_OF_LINE END_OF_PARAGRAPH/],
