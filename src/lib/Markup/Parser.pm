@@ -95,11 +95,6 @@ sub _parse_internal {
 	    }
 
 	    $not_done='';
-
-	    if($context->indent) {
-		($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-	    }
-	    
 	    
 	} elsif($token eq 'HEADER_TAG') { # Handle headers
 	    
