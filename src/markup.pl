@@ -9,9 +9,6 @@ use strict;
 use warnings;
 use diagnostics;
 
-# Provide a readable display of our parsed data structure
-use Data::Dumper;
-
 use Markup::Parser;
 use Markup::Tokenizer;
 use Markup::Backend::XML;
