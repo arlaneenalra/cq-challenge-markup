@@ -90,7 +90,12 @@ sub _parse_internal {
 	    
 	} elsif($token eq 'TAG_BLOCK_END') {
 
-	    $context->append_node();
+	    # only append the node if there is something 
+	    # to append
+	    if(@{$context->text}) {
+		$context->append_node();
+	    }
+
 	    $not_done='';
 
 	    if($context->indent) {
@@ -150,7 +155,8 @@ sub _parse_eol {
 
 	# if we are at the end of a paragraph, append a node
 	$context->append_node()
-	    if($token eq 'END_OF_PARAGRAPH');
+	    if($token eq 'END_OF_PARAGRAPH'
+	    and @{$context->text}); # make sure there is some text
 
 	# move to the next line
 	shift @$tokens;
