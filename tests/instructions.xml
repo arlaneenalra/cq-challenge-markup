@@ -65,27 +65,35 @@
     <p>Since we intend to publish the code on our web site and will discuss some of the code in our article we need sufficient rights to republish your code in its entirety. When you are ready to submit your code, you will need to agree to <link>some terms</link> giving us the rights we need. Beyond that, your code is yours to do with as you see fit.</p>
     <p>Good luck and happy coding!</p>
     <link_def>
-        <link>challenges</link><url>/code-challenges/</url>
+        <link>challenges</link>
+        <url>/code-challenges/</url>
     </link_def>
     <link_def>
-        <link>markup specification</link><url>markup-spec.html</url>
+        <link>markup specification</link>
+        <url>markup-spec.html</url>
     </link_def>
     <link_def>
-        <link>tar.gz</link><url>cq-challenge-markup.tar.gz</url>
+        <link>tar.gz</link>
+        <url>cq-challenge-markup.tar.gz</url>
     </link_def>
     <link_def>
-        <link>zip</link><url>cq-challenge-markup.zip</url>
+        <link>zip</link>
+        <url>cq-challenge-markup.zip</url>
     </link_def>
     <link_def>
-        <link>submit</link><url>submit.html</url>
+        <link>submit</link>
+        <url>submit.html</url>
     </link_def>
     <link_def>
-        <link>some terms</link><url>terms.html</url>
+        <link>some terms</link>
+        <url>terms.html</url>
     </link_def>
     <link_def>
-        <link>github</link><url>http://www.github.com/</url>
+        <link>github</link>
+        <url>http://www.github.com/</url>
     </link_def>
     <link_def>
-        <link>comments</link><url>comments/</url>
+        <link>comments</link>
+        <url>comments/</url>
     </link_def>
 </body>

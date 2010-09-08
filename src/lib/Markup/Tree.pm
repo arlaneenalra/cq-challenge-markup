@@ -28,8 +28,9 @@ Append text to the end of the node we are currently working on.
 sub append_text {
     my ($self, $text)=@_;
     
-    #$self->text = $self->text .  $text;
-    push @{$self->text}, $text;
+    if($text ne '') {
+	push @{$self->text}, $text;
+    }
 }
 
 =head2 append_node
@@ -53,10 +54,12 @@ sub append_node {
 	    or $self->verbatim) {
 	    $self->body = $self->text;
 	} else {
-	    # add a simple node
-	    push @{$self->body}, Markup::Tree->new(
-		name => $self->node,
-		body => $self->text);
+	    if(@{$self->text}) {
+		# add a simple node
+		push @{$self->body}, Markup::Tree->new(
+		    name => $self->node,
+		    body => $self->text);
+	    }
 	}
     }
     
