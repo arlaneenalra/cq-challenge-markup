@@ -330,18 +330,12 @@ sub _parse_link_start {
 
     my $marker=($token eq 'LINK_BLOCK_START') ? 'link' : 'url';
     
-    # shift off the current token
-    shift @$tokens;
 
-    # replace it with an ESCAPE and TAG_BLOCK_START
-    # this has to be done in reverse order to fit 
-    # since unshift appends to the front of our array
-    unshift @$tokens, ['TAG_BLOCK_START','{'];
-    unshift @$tokens, ['', $marker];
-    unshift @$tokens, ['ESCAPE',''];
-    
+    $self->_convert_to_tag($tokens, $marker);
+
     return (1,1);
 }
+
 
 =head2 _parse_link_middle
 
@@ -356,7 +350,7 @@ sub _parse_link_middle {
 
     # only treat this as special if we are parsing a link
     if($context->name eq 'link') {
-	$self->_parse_link_start($context, $tokens, 'key');
+	$self->_convert_to_tag($tokens, 'key');
 
     } else {
 	# we don't have a link, so fall back to text
@@ -366,6 +360,27 @@ sub _parse_link_middle {
     return (1, 1);
 }
     
+
+=head2 _convert_to_tag
+
+Converts whatever the current token is into a tag 
+with the given name
+
+=cut
+
+sub _convert_to_tag {
+    my ($self, $tokens, $name)=@_;
+
+    # shift off the current token
+    shift @$tokens;
+
+    # replace it with an ESCAPE and TAG_BLOCK_START
+    # this has to be done in reverse order to fit 
+    # since unshift appends to the front of our array
+    unshift @$tokens, ['TAG_BLOCK_START','{'];
+    unshift @$tokens, ['', $name];
+    unshift @$tokens, ['ESCAPE',''];
+}
 
 =head2 _parse_link_end 
 
