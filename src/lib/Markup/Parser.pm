@@ -11,6 +11,34 @@ use Markup::Tree;
 # Default subdocument nodes
 my %subdocument_node = map { $_ => 1 } qw/note/;
 
+# use a hash to tie each token to a parsing function rather than
+# using a chain of if ... elsif's
+my %parse_function = (
+    'END_OF_LINE' => \&_parse_eol,
+    'END_OF_PARAGRAPH' => \&_parse_eol,
+
+    'ORDERED_LIST' => \&_parse_list,
+    'UNORDERED_LIST' => \&_parse_list,
+
+    'ESCAPE' => \&_parse_escape,
+    'TAG_BLOCK_END' => \&_parse_tag_end,
+
+    'LINK_BLOCK_START' => \&_parse_link_start,
+    'LINK_MIDDLE' => \&_parse_link_middle,
+    'LINK_BLOCK_END' => \&_parse_link_end,
+    'LINK_DEF_START' => \&_parse_link_start,
+    'LINK_DEF_END' => \&_parse_link_def_end,
+
+    'HEADER_TAG' => \&_parse_header,
+
+    'INDENT' => \&_parse_indent,
+
+    'DEDENT' => sub { return ('', 1);}, # this is too simple to warrant more
+
+    'REMARK_LINK_DEF' => \&_remark,
+
+    );
+
 =head1 NAME
 
 Markup::Parser - Core class of the markup parser.
@@ -139,14 +167,7 @@ sub _parse_internal {
 
 	} elsif($token eq 'REMARK_LINK_DEF') { # Handle link_def ending
 	    
-	    # we replace the paragraph that was being built with
-	    # a link_def
-	    $context->append_node(
-		Markup::Tree->new(
-		    name => 'link_def',
-		    indent => $context->indent,
-		    inline => 0,
-		    body => $context->text));	    
+	    ($not_done, $no_shift)=$self->_remark($context, $tokens);
 
 	} else { # Catch all to be for use during implementation
 
@@ -166,6 +187,28 @@ sub _parse_internal {
     }
 
     return $context;
+}
+
+
+=head2 _remark
+
+Used when creating link_def's to convert a paragraph into a link_def 
+
+=cut
+
+sub _remark {
+    my ($self, $context, $tokens)=@_;
+
+    # we replace the paragraph that was being built with
+    # a link_def
+    $context->append_node(
+	Markup::Tree->new(
+	    name => 'link_def',
+	    indent => $context->indent,
+	    inline => 0,
+	    body => $context->text));	    
+
+    return (1,'');
 }
 
 =head2 _parse_tag_end
