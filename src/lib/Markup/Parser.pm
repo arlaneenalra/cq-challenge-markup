@@ -104,15 +104,7 @@ sub _parse_internal {
 
 	} elsif($token eq 'LINK_MIDDLE') { 
 
-	    # only treat this as special if we are parsing a link
-	    if($context->name eq 'link') {
-		$self->_parse_link_start($context, $tokens, 'key');
-
-	    } else {
-		# we don't have a link, so fall back to text
-		$tokens->[0]=['',$txt];
-	    }
-	    $no_shift=1;
+	    ($not_done, $no_shift)=$self->_parse_link_middle($context, $tokens);
 
 	} elsif($token eq 'LINK_BLOCK_START') { # Handle the start of a link
 	    
@@ -321,6 +313,29 @@ sub _parse_link_start {
     return (1,1);
 }
 
+=head2 _parse_link_middle
+
+Handles linkes of the form [link|key]
+
+=cut
+
+sub _parse_link_middle {
+    my ($self, $context, $tokens)=@_;
+
+    my ($token, $txt)=@{$tokens->[0]};
+
+    # only treat this as special if we are parsing a link
+    if($context->name eq 'link') {
+	$self->_parse_link_start($context, $tokens, 'key');
+
+    } else {
+	# we don't have a link, so fall back to text
+	$tokens->[0]=['',$txt];
+    }
+
+    return (1, 1);
+}
+    
 
 =head2 _parse_link_end 
 
