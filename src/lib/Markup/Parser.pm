@@ -115,59 +115,10 @@ sub _parse_internal {
 
 	    $context->append_text($txt);
 
-	} elsif($token eq 'END_OF_LINE'
-		or $token eq 'END_OF_PARAGRAPH') { # Handle a single eol 
-	    
-	    ($not_done, $no_shift)=$self->_parse_eol($context,$tokens);
+	} elsif($parse_function{$token}) { 
 
-    	} elsif($token eq 'ORDERED_LIST'
-		or $token eq 'UNORDERED_LIST') { # Handle various kinds of lists
-	    
-	    ($not_done, $no_shift)=$self->_parse_list($context, $tokens);
-	    
-	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
-	                              # this could mean any number of things
-	    ($not_done, $no_shift)=$self->_parse_escape($context, $tokens);
-	    
-	} elsif($token eq 'TAG_BLOCK_END') {
-	    
-	    ($not_done, $no_shift)=$self->_parse_tag_end($context,$tokens);
-	    
-	} elsif($token eq 'LINK_BLOCK_END') { # Handle link block ends
-
-	    ($not_done, $no_shift)=$self->_parse_link_end($context, $tokens);
-
-	} elsif($token eq 'LINK_MIDDLE') { 
-
-	    ($not_done, $no_shift)=$self->_parse_link_middle($context, $tokens);
-
-	} elsif($token eq 'LINK_BLOCK_START') { # Handle the start of a link
-	    
-	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens);
-	    
-	} elsif($token eq 'LINK_DEF_START') { # Handle a url at the end of a link
-
-	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens);
-
-	} elsif($token eq 'LINK_DEF_END') { # Handle the end of a link deinition
-	    
-	    ($not_done, $no_shift)=$self->_parse_link_def_end($context, $tokens);
-
-	} elsif($token eq 'HEADER_TAG') { # Handle headers
-	    
-	    ($not_done, $no_shift)=$self->_parse_header($context,$tokens);
-
-	} elsif($token eq 'INDENT') { # Handle a block quote
-
-	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-	    	    
-	} elsif($token eq 'DEDENT') { # Handle list dedent
-	    
-	    $not_done=''; # drop back one more layer from the current call
-
-	} elsif($token eq 'REMARK_LINK_DEF') { # Handle link_def ending
-	    
-	    ($not_done, $no_shift)=$self->_remark($context, $tokens);
+	    # call the appropriate parse function for the given token
+	    ($not_done,$no_shift)=$parse_function($token}->($self, $context, $tokens);
 
 	} else { # Catch all to be for use during implementation
 
