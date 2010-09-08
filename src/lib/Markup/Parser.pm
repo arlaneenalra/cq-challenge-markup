@@ -89,14 +89,9 @@ sub _parse_internal {
 	    ($not_done, $no_shift)=$self->_parse_escape($context, $tokens);
 	    
 	} elsif($token eq 'TAG_BLOCK_END') {
+	    
+	    ($not_done, $no_shift)=$self->_parse_tag_end($context,$tokens);
 
-	    # only append the node if there is something 
-	    # to append
-	    if(@{$context->text}) {
-		$context->append_node();
-	    }
-
-	    $not_done='';
 	    
 	} elsif($token eq 'LINK_BLOCK_END') { # Handle link block ends
 
@@ -120,14 +115,15 @@ sub _parse_internal {
 
 	} elsif($token eq 'HEADER_TAG') { # Handle headers
 	    
-	    $self->_parse_header($context,$tokens);
+	    ($not_done, $no_shift)=$self->_parse_header($context,$tokens);
 
 	} elsif($token eq 'INDENT') { # Handle a block quote
 
 	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
 	    	    
 	} elsif($token eq 'DEDENT') { # Handle list dedent
-	    $not_done='';
+	    
+	    $not_done=''; # drop back one more layer from the current call
 
 	} elsif($token eq 'REMARK_LINK_DEF') { # Handle link_def ending
 	    
@@ -138,11 +134,12 @@ sub _parse_internal {
 		    name => 'link_def',
 		    indent => $context->indent,
 		    inline => 0,
-		    body => $context->text));
-	    
+		    body => $context->text));	    
 
 	} else { # Catch all to be for use during implementation
+
 	    warn "Unhandled token: $token";
+
 	    $context->append_text($txt);
 	}
 	
@@ -157,6 +154,24 @@ sub _parse_internal {
     }
 
     return $context;
+}
+
+=head2 _parse_tag_end
+
+Handles the end of a \tag{text} style tag
+
+=cut
+
+sub _parse_tag_end {
+    my ($self, $context, $tokens)=@_;
+
+    # only append the node if there is something 
+    # to append
+    if(@{$context->text}) {
+	$context->append_node();
+    }
+    
+    return ('','');
 }
 
 =head2 _parse_eol
@@ -575,8 +590,6 @@ Parses a chain of header '*' characters to into a header
 sub _parse_header {
     my ($self, $context, $tokens)=@_;
     
-    my $no_shift='';
-    
     my ($token, $txt)=@{$tokens->[0]};
 
     my $depth=split '\*', $txt; # track header depth
@@ -584,7 +597,7 @@ sub _parse_header {
 
     $context->node="h$depth";
     
-    return $no_shift;
+    return (1,'');
 }
 
 =head2 required_args
