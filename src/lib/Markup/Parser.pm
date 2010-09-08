@@ -100,27 +100,7 @@ sub _parse_internal {
 	    
 	} elsif($token eq 'LINK_BLOCK_END') { # Handle link block ends
 
-	    # are we ending a LINK_BLOCK with a key?
-	    if($context->name eq 'key') {
-		
-		# drop out of the key and reprocess in the next
-		# layer up
-		unshift @$tokens, ['', ''];
-		$not_done='';
-
-	    } elsif($context->name eq 'link') {
-		# we have a link, so, convert this token into a tag block
-		# ending
-		$tokens->[0]=['TAG_BLOCK_END', '}'];
-
-	    } else {
-		# we don't have a link or a tag, so,
-		# convert this block to text
-		$tokens->[0]=['', $txt];
-
-	    }
-
-	    $no_shift=1;
+	    ($not_done, $no_shift)=$self->_parse_link_end($context, $tokens);
 
 	} elsif($token eq 'LINK_DEF_END') { # Handle the end of a link deinition
 	    
@@ -341,101 +321,59 @@ sub _parse_escape {
 
 =head2 _parse_link_start
 
-Handles the begining of a link block by converting it into a sequence of 
-escape blocks
+Handles the begining of a link block by converting it into an escape block
 
 =cut
 
 sub _parse_link_start {
     my ($self, $context, $tokens, $marker)=@_;
-   
-    # Links take the form of [text|key] or [text] or [text] <target>
+    
+
+    # shift off the current token
     shift @$tokens;
+
+    # replace it with an ESCAPE and TAG_BLOCK_START
+    # this has to be done in reverse order to fit 
+    # since unshift appends to the front of our array
     unshift @$tokens, ['TAG_BLOCK_START','{'];
     unshift @$tokens, ['', $marker];
     unshift @$tokens, ['ESCAPE',''];
-
-    # # start a link 
-    # $context->append_text(
-    # 	$self->_parse_internal(
-    # 	  Markup::Tree->new(
-    # 	      name => 'link',
-    # 	      indent => $context->indent,
-    # 	      inline => 1),
-    # 	    $tokens));
+}
 
 
-    # # Handle a [test|key] form link
-    # if($tokens->[2]->[0] eq 'LINK_MIDDLE'
-    #    and $tokens->[4]->[0] eq 'LINK_BLOCK_END') {
+=head2 _parse_link_end 
 
-    # 	# retrieve the text part of our lookup
-    # 	my ($link, $key)=map {$_->[1] } @{$tokens}[1,3];
+Handles a link/key end by either converting it to a tag block end or
+to a text block.
+
+=cut
+
+sub _parse_link_end {
+    my ($self, $context, $tokens)=@_;
+
+    my ($token, $txt)=@{$tokens->[0]};
+
+    # are we ending a LINK_BLOCK with a key?
+    if($context->name eq 'key') {
 	
-    # 	# append the link and key nodes then return
-    # 	my $key_node=Markup::Tree->new(
-    # 	    name => 'key',
-    # 	    inline => 1);
-	
-    # 	#TODO:append_text and append_node need to be rewritten
-    # 	$key_node->append_text($key);
-    # 	$key_node->append_node();
-	
-    # 	my $link_node=Markup::Tree->new(
-    # 	    name => 'link',
-    # 	    inline => 1);
+	# drop out of the key and reprocess in the next
+	# layer up
+	unshift @$tokens, ['', ''];
+	return ('', 1);
 
-    # 	$link_node->append_text($link);
-    # 	$link_node->append_node();
+    } elsif($context->name eq 'link') {
+	# we have a link, so, convert this token into a tag block
+	# ending
+	$tokens->[0]=['TAG_BLOCK_END', '}'];
 
-    # 	$link_node->append_node($key_node);
-	
-    # 	$context->append_text($link_node);
+    } else {
+	# we don't have a link or a key, so,
+	# convert this block to text
+	$tokens->[0]=['', $txt];
 
-    # 	splice @$tokens, 0,5;
-	
-    # } elsif ($tokens->[2]->[0] eq 'LINK_BLOCK_END'
-    # 	     and $tokens->[3]->[0] eq 'LINK_DEF_START'
-    # 	     and $tokens->[5]->[0] eq 'LINK_DEF_END') { # Handle a link def [link]<target>
+    }
 
-    # 	# get the link value and target
-    # 	my ($link, $url)=map { $_->[1]} @{$tokens}[1,4];
-
-	
-    # 	# build and append the various nodes
-    # 	my $link_def_node=Markup::Tree->new(
-    # 	    name => 'link_def');
-	
-    # 	$link_def_node->append_text($link);
-    # 	$link_def_node->node='link';
-    # 	$link_def_node->append_node();
-
-    # 	$link_def_node->append_text($url);
-    # 	$link_def_node->node='url';
-    # 	$link_def_node->append_node();
-
-    # 	$context->append_node($link_def_node);
-
-    # 	splice @$tokens, 0,6;
-
-    # } elsif($tokens->[2]->[0] eq 'LINK_BLOCK_END') { # handle links of the form [text]
-
-    # 	my $link=$tokens->[1]->[1];
-
-    # 	my $link_node=Markup::Tree->new(
-    # 	    name => 'link',
-    # 	    inline => 1);
-
-    # 	$link_node->append_text($link);
-    # 	$link_node->append_node();
-	
-    # 	$context->append_text($link_node);
-	
-    # 	splice @$tokens, 0,3;
-
-    # } else { # this is not a link
-    # 	$tokens->[0]->[0]='';
-    # }
+    return (1, 1);
 }
 
 =head2 _parse_verbatim
