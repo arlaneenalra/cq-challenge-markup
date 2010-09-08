@@ -12,21 +12,20 @@ my @token_patterns=(
 
     [qr(\*\** ) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
 
-    # TODO:  Add link processing
+    [qr/   */ => 'INDENT'], # Matches 2 or more leading spaces 
 
     [qr(\\) => 'ESCAPE'], # Match the escape character
     [qr({) => 'TAG_BLOCK_START'], # Match the start of the a tag block
     [qr(}) => 'TAG_BLOCK_END'], # Match the end of a tag block
 
-    # [qr(\[) => 'LINK_BLOCK_START'], # Match the start of a link block
-    # [qr(\|) => 'LINK_MIDDLE'], # Match middle of a link block
-    # [qr(\]) => 'LINK_BLOCK_END'], # Match the end of a link block
-
+    [qr(\[) => 'LINK_BLOCK_START'], # Match the start of a link block
+    [qr(\|) => 'LINK_MIDDLE'], # Match middle of a link block
+    [qr(\]) => 'LINK_BLOCK_END'], # Match the end of a link block
+    [qr/ *</ => 'LINK_DEF_START'], # Match the end of a link block
+    [qr(>) => 'LINK_DEF_END'], # Match the end of a link block
     
     [qr(- ) => 'UNORDERED_LIST'], # Matches an unordered list
     [qr(# ) => 'ORDERED_LIST'], # Matches an ordered list
-    
-    [qr/   */ => 'INDENT'], # Matches 2 or more leading spaces 
     
     [qr($/\s*($/)+) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
     [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
@@ -44,6 +43,11 @@ my %token_rules=(
     'END_OF_PARAGRAPH' => [qw/+ANY+ +DELETE+/],
     'END_OF_LINE' => [qw/+ANY+ +DELETE+/],
     'EMACS_MODE' => [qw/+ANY+ +DELETE+/],
+    
+    'LINK_MIDDLE' => [''],
+    'LINK_BLOCK_END' => [''],
+    'LINK_DEF_START' => [qw/LINK_BLOCK_END/],
+    'LINK_DEF_END' => [''],
     );
 
 =head1 NAME

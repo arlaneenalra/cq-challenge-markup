@@ -41,7 +41,7 @@ node to be appended
 =cut
 
 sub append_node {
-    my ($self, $node, $inline)=@_;
+    my ($self, $node)=@_;
 
     # do we have a simple or complex node
     if($node) {
