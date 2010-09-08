@@ -8,13 +8,28 @@ use base 'Markup::Base';
 
 use Markup::Tree;
 
+# Default subdocument nodes
 my %subdocument_node = map { $_ => 1 } qw/note/;
 
 =head1 NAME
 
-Markup::Parser - Base class for Markup parsers.
+Markup::Parser - Core class of the markup parser.
 
 =head1 SYNOPSIS
+
+When configured with a Tokenizer instance, this class converts a Markup token 
+stream into a tree structure similar in nature to a DOM.
+
+=over
+=begin perl
+
+my $parse=Markup::Parse->new(
+    tokenizer => Markup::Tokenizer->new());
+
+my $tree=$parse->parse($source);
+
+=end
+=back
 
 =cut
 
@@ -37,9 +52,6 @@ sub parse {
 
     # Convert the content into a stream of tokens
     my @tokens=$self->tokenizer->tokenize($content);
-
-    use Data::Dumper;
-    print &Dumper(\@tokens);
 
     # Parse our token stream
     return $self->_parse_internal(Markup::Tree->new(), \@tokens);
@@ -72,6 +84,7 @@ sub _parse_internal {
 	# TODO: this might be better handled as a hash
 
 	if($token eq '') { # Handle simple text
+
 	    $context->append_text($txt);
 
 	} elsif($token eq 'END_OF_LINE'
@@ -91,7 +104,6 @@ sub _parse_internal {
 	} elsif($token eq 'TAG_BLOCK_END') {
 	    
 	    ($not_done, $no_shift)=$self->_parse_tag_end($context,$tokens);
-
 	    
 	} elsif($token eq 'LINK_BLOCK_END') { # Handle link block ends
 
@@ -430,9 +442,6 @@ sub _parse_link_def_end {
 	$tokens->[0]=['', $txt];
     }
 
-    use Data::Dumper;
-    print &Dumper($tokens);
-    
     return ($not_done, 1);
 }
 
