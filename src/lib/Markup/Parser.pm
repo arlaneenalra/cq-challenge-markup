@@ -88,8 +88,7 @@ sub _parse_internal {
 	                              # this could mean any number of things
 	    $no_shift=$self->_parse_escape($context, $tokens);
 	    
-	} elsif($token eq 'TAG_BLOCK_END'
-	    or $token eq 'LINK_BLOCK_END') {
+	} elsif($token eq 'TAG_BLOCK_END') {
 
 	    # only append the node if there is something 
 	    # to append
@@ -97,22 +96,76 @@ sub _parse_internal {
 		$context->append_node();
 	    }
 
-	    # are we ending a LINK_BLOCK with a key?
-	    if($token eq 'LINK_BLOCK_END'
-	       and $context->name eq 'key') {
-		
-		# dedent should end the link block 
-		unshift @$tokens, ['DEDENT', ''];
-	    }
-
 	    $not_done='';
 	    
+	} elsif($token eq 'LINK_BLOCK_END') { # Handle link block ends
+
+	    # are we ending a LINK_BLOCK with a key?
+	    if($context->name eq 'key') {
+		
+		# drop out of the key and reprocess in the next
+		# layer up
+		unshift @$tokens, ['', ''];
+		$not_done='';
+
+	    } elsif($context->name eq 'link') {
+		# we have a link, so, convert this token into a tag block
+		# ending
+		$tokens->[0]=['TAG_BLOCK_END', '}'];
+
+	    } else {
+		# we don't have a link or a tag, so,
+		# convert this block to text
+		$tokens->[0]=['', $txt];
+
+	    }
+
+	    $no_shift=1;
+
+	} elsif($token eq 'LINK_DEF_END') { # Handle the end of a link deinition
+	    
+	    my $real_link_def=1;
+
+	    # we need to convert the enclosing paragraph into
+	    # a link_def element
+	    if(@$tokens>1) {
+		my ($next_token, $next_txt)=@{$tokens->[1]};
+		
+		$real_link_def=($next_token eq 'END_OF_LINE'
+				or $next_token eq 'END_OF_PARAGRAPH');
+	    }
+	    
+	    # if we have a real link, replace the paragraph we are in
+	    # with a link def
+	    if($real_link_def) {
+		shift @$tokens;
+		unshift @$tokens, ['REMARK_LINK_DEF', 'link_def'];
+		$not_done='';
+
+	    } else {
+		# Convert this token to text
+		$tokens->[0]=['', $txt];
+	    }
+	    
+	    $no_shift=1;
+
 	} elsif($token eq 'LINK_BLOCK_START') { # Handle links
 	    $self->_parse_link_start($context, $tokens, 'link');
 	    $no_shift=1;
 	    
 	} elsif($token eq 'LINK_MIDDLE') {
-	    $self->_parse_link_start($context, $tokens, 'key');
+	    # only treat this as special if we are parsing a link
+	    if($context->name eq 'link') {
+		$self->_parse_link_start($context, $tokens, 'key');
+
+	    } else {
+		# we don't have a link, so fall back to text
+		$tokens->[0]=['',$txt];
+	    }
+	    $no_shift=1;
+
+	} elsif($token eq 'LINK_DEF_START') {
+	    $self->_parse_link_start($context, $tokens, 'url');
 	    $no_shift=1;
 
 	} elsif($token eq 'HEADER_TAG') { # Handle headers
@@ -125,6 +178,18 @@ sub _parse_internal {
 	    	    
 	} elsif($token eq 'DEDENT') { # Handle list dedent
 	    $not_done='';
+
+	} elsif($token eq 'REMARK_LINK_DEF') { # Handle link_def ending
+	    
+	    # we replace the paragraph that was being built with
+	    # a link_def
+	    $context->append_node(
+		Markup::Tree->new(
+		    name => 'link_def',
+		    indent => $context->indent,
+		    inline => 0,
+		    body => $context->text));
+	    
 
 	} else { # Catch all to be for use during implementation
 	    warn "Unhandled token: $token";
@@ -261,7 +326,6 @@ sub _parse_escape {
     shift @$tokens;
 
     # start parsing the tagged text
-    #$context->append_node();
 
     $context->append_text(
 	$self->_parse_internal(

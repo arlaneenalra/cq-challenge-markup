@@ -6,7 +6,7 @@ use base 'Markup::Base';
 
 # list of tags that are considered containers and need to have
 # a $/ after the opening tag
-my %container = map { $_ => 1 } qw/body blockquote ol ul li note link_def/;
+my %container = map { $_ => 1 } qw/body blockquote ol ul li note/;
 
 =head1 NAME
 
