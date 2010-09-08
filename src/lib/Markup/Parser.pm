@@ -102,15 +102,7 @@ sub _parse_internal {
 
 	    ($not_done, $no_shift)=$self->_parse_link_end($context, $tokens);
 
-	} elsif($token eq 'LINK_DEF_END') { # Handle the end of a link deinition
-	    
-	    ($not_done, $no_shift)=$self->_parse_link_def_end($context, $tokens);
-
-	} elsif($token eq 'LINK_BLOCK_START') { # Handle links
-	    
-	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens, 'link');
-	    
-	} elsif($token eq 'LINK_MIDDLE') {
+	} elsif($token eq 'LINK_MIDDLE') { 
 
 	    # only treat this as special if we are parsing a link
 	    if($context->name eq 'link') {
@@ -122,9 +114,17 @@ sub _parse_internal {
 	    }
 	    $no_shift=1;
 
-	} elsif($token eq 'LINK_DEF_START') {
-	    $self->_parse_link_start($context, $tokens, 'url');
-	    $no_shift=1;
+	} elsif($token eq 'LINK_BLOCK_START') { # Handle the start of a link
+	    
+	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens, 'link');
+	    
+	} elsif($token eq 'LINK_DEF_START') { # Handle a url at the end of a link
+
+	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens, 'url');
+
+	} elsif($token eq 'LINK_DEF_END') { # Handle the end of a link deinition
+	    
+	    ($not_done, $no_shift)=$self->_parse_link_def_end($context, $tokens);
 
 	} elsif($token eq 'HEADER_TAG') { # Handle headers
 	    
