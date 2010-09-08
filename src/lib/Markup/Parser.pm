@@ -118,7 +118,7 @@ sub _parse_internal {
 	} elsif($parse_function{$token}) { 
 
 	    # call the appropriate parse function for the given token
-	    ($not_done,$no_shift)=$parse_function($token}->($self, $context, $tokens);
+	    ($not_done,$no_shift)=$parse_function{$token}->($self, $context, $tokens);
 
 	} else { # Catch all to be for use during implementation
 
