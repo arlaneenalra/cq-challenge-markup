@@ -115,11 +115,11 @@ sub _parse_internal {
 
 	} elsif($token eq 'LINK_BLOCK_START') { # Handle the start of a link
 	    
-	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens, 'link');
+	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens);
 	    
 	} elsif($token eq 'LINK_DEF_START') { # Handle a url at the end of a link
 
-	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens, 'url');
+	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens);
 
 	} elsif($token eq 'LINK_DEF_END') { # Handle the end of a link deinition
 	    
@@ -324,9 +324,12 @@ Handles the begining of a link block by converting it into an escape block
 =cut
 
 sub _parse_link_start {
-    my ($self, $context, $tokens, $marker)=@_;
-    
+    my ($self, $context, $tokens)=@_;
 
+    my ($token, $txt)=@{$tokens->[0]};
+
+    my $marker=($token eq 'LINK_BLOCK_START') ? 'link' : 'url';
+    
     # shift off the current token
     shift @$tokens;
 
