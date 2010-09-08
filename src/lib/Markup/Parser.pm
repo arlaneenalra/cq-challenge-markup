@@ -33,7 +33,7 @@ my %parse_function = (
 
     'INDENT' => \&_parse_indent,
 
-    'DEDENT' => sub { return ('', 1);}, # this is too simple to warrant more
+    'DEDENT' => sub { return ('', '');}, # this is too simple to warrant more
 
     'REMARK_LINK_DEF' => \&_remark,
 
