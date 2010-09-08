@@ -104,30 +104,7 @@ sub _parse_internal {
 
 	} elsif($token eq 'LINK_DEF_END') { # Handle the end of a link deinition
 	    
-	    my $real_link_def=1;
-
-	    # we need to convert the enclosing paragraph into
-	    # a link_def element
-	    if(@$tokens>1) {
-		my ($next_token, $next_txt)=@{$tokens->[1]};
-		
-		$real_link_def=($next_token eq 'END_OF_LINE'
-				or $next_token eq 'END_OF_PARAGRAPH');
-	    }
-	    
-	    # if we have a real link, replace the paragraph we are in
-	    # with a link def
-	    if($real_link_def) {
-		shift @$tokens;
-		unshift @$tokens, ['REMARK_LINK_DEF', 'link_def'];
-		$not_done='';
-
-	    } else {
-		# Convert this token to text
-		$tokens->[0]=['', $txt];
-	    }
-	    
-	    $no_shift=1;
+	    ($not_done, $no_shift)=$self->_parse_link_def_end($context, $tokens);
 
 	} elsif($token eq 'LINK_BLOCK_START') { # Handle links
 	    $self->_parse_link_start($context, $tokens, 'link');
@@ -374,6 +351,55 @@ sub _parse_link_end {
     }
 
     return (1, 1);
+}
+
+=head2 _parse_link_def_end
+
+Handles "[link] <url>" style definitions.  When a LINK_DEF_END token is 
+found it decides if the parent of the curren element should be converted 
+into a link_def or if this token should be converted to a text token
+
+=cut
+
+sub _parse_link_def_end {
+    my ($self, $context, $tokens)=@_;
+    
+    my ($token, $txt)=@{$tokens->[0]};
+    my $not_done=1;
+
+    # flag which indicates if we really have a link definition 
+    # or something else
+    my $real_link_def=1; 
+
+    # we need to convert the enclosing paragraph into
+    # a link_def element
+    if(@$tokens>1) {
+	my ($next_token, $next_txt)=@{$tokens->[1]};
+	
+	$real_link_def=($next_token eq 'END_OF_LINE'
+			or $next_token eq 'END_OF_PARAGRAPH');
+    }
+    
+    # if we have a real link, replace the paragraph we are in
+    # with a link_def using a REMARK_LINK_DEF token
+
+    if($real_link_def
+	and $context->name eq 'url') {
+
+	# pop the LINK_DEF_END token and replace it 
+	shift @$tokens;
+	unshift @$tokens, ['REMARK_LINK_DEF', 'link_def'];
+	$not_done='';
+
+    } else {
+	# Convert this token to text
+	$tokens->[0]=['', $txt];
+    }
+
+    use Data::Dumper;
+    print &Dumper($tokens);
+    
+    return ($not_done, 1);
 }
 
 =head2 _parse_verbatim
