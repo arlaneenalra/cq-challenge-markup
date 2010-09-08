@@ -82,11 +82,11 @@ sub _parse_internal {
     	} elsif($token eq 'ORDERED_LIST'
 		or $token eq 'UNORDERED_LIST') { # Handle various kinds of lists
 	    
-	    $no_shift=$self->_parse_list($context, $tokens);
+	    ($not_done, $no_shift)=$self->_parse_list($context, $tokens);
 	    
 	} elsif($token eq 'ESCAPE') { # Handle an escape token, 
 	                              # this could mean any number of things
-	    $no_shift=$self->_parse_escape($context, $tokens);
+	    ($not_done, $no_shift)=$self->_parse_escape($context, $tokens);
 	    
 	} elsif($token eq 'TAG_BLOCK_END') {
 
@@ -107,10 +107,11 @@ sub _parse_internal {
 	    ($not_done, $no_shift)=$self->_parse_link_def_end($context, $tokens);
 
 	} elsif($token eq 'LINK_BLOCK_START') { # Handle links
-	    $self->_parse_link_start($context, $tokens, 'link');
-	    $no_shift=1;
+	    
+	    ($not_done, $no_shift)=$self->_parse_link_start($context, $tokens, 'link');
 	    
 	} elsif($token eq 'LINK_MIDDLE') {
+
 	    # only treat this as special if we are parsing a link
 	    if($context->name eq 'link') {
 		$self->_parse_link_start($context, $tokens, 'key');
@@ -242,7 +243,7 @@ sub _parse_list {
 		    indent => $context->indent),
 		$tokens));
 
-	return '';
+	return (1, '');
     }
 
     # this node should look like a block quote
@@ -254,7 +255,7 @@ sub _parse_list {
     $context->name=$list_type;
     $context->indent+=2;
 
-    return 1;
+    return (1, 1);
 }
 
 =head2 _parse_escape
@@ -275,7 +276,7 @@ sub _parse_escape {
     if($next_token ne 'TAG_BLOCK_START') {
 	$context->append_text($txt);
 
-	return '';
+	return (1, '');
     }
     
     # pop the next two tokens
@@ -293,7 +294,8 @@ sub _parse_escape {
 	      subdocument => $subdocument_node{$txt}, # is this a subdocument node?
 	    ),
 	    $tokens));
-    return 1;
+
+    return (1, 1);
 }
 
 =head2 _parse_link_start
@@ -315,6 +317,8 @@ sub _parse_link_start {
     unshift @$tokens, ['TAG_BLOCK_START','{'];
     unshift @$tokens, ['', $marker];
     unshift @$tokens, ['ESCAPE',''];
+    
+    return (1,1);
 }
 
 
