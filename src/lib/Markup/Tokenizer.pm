@@ -44,10 +44,7 @@ my %token_rules=(
     'END_OF_LINE' => [qw/+ANY+ +DELETE+/],
     'EMACS_MODE' => [qw/+ANY+ +DELETE+/],
     
-    'LINK_MIDDLE' => [''],
-    'LINK_BLOCK_END' => [''],
     'LINK_DEF_START' => [qw/LINK_BLOCK_END/],
-    'LINK_DEF_END' => [''],
     );
 
 =head1 NAME
