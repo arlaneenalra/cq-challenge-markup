@@ -1,0 +1,100 @@
+-*- mode: markup; -*-
+
+* Code Challenge: Markup
+
+* The task
+
+The challenge, as accepted it, was to provide:
+
+  # \i{The source code to a parser that, given the contents of a file in
+    whatever form is natural for your language of choice—perhaps as an
+    open stream or a string—returns a data structure representing the
+    document tree as described in the [Markup specification] if the
+    file is syntactically correct.}
+
+    You find the code to what I would conisder a reasonable parser for
+    Markup provided in src/lib.  Specifically, the Perl modules 
+    \code{Markup::Tokenizer} and \code{Markup::Parser}.
+
+  # \i{English language documentation for the data structure returned by
+    the parser sufficient to allow a programmer familiar with your
+    implementation language to write a back-end that generates some
+    kind of output from the results returned by the parser.}
+
+    Descriptions of the data structures returned by Markup::Parser may 
+    be found in the pod\note{pod or 'Plain Old Documentation' is a standard 
+    form of in line documentation used throughout Perl.  It can be viewed 
+    using he \code{perldoc} utility like so:
+
+       % perldoc Module::Parser
+
+    in location where perldoc can find the module in question.} documentation.
+    A more detailed description will be provided towards the end of this 
+    document. 
+
+  # \i{The source code to a sample back-end that generates well-formed
+    XML according to the “Trivial XML backend” section of the
+    spec.\note{We don’t use XML because we have any great love for it
+    but because it is a reasonable lowest-common-denominator format.}}
+
+    A back-end meeting that above criteria can be found in the Perl
+    module \code{Markup::Backend::XML}.  The back-end as an example:
+    
+       use Markup::Parser;
+       use Markup::Tokenizer;
+       use Markup::Backend::XML;
+       
+       my $tokenizer=Markup::Tokenizer->new(links => $links);
+       my $parser=Markup::Parser->new(tokenizer => $tokenizer);
+       my $backend=Markup::Backend::XML->new();
+
+       # code to retrieve $source
+
+       my $tree=$parser->parse($source);
+       
+       my $string=$backend->string($tree);
+  
+  # \i{The source code to a driver program that, given the name of a
+    file, parses the file and then generates a corresponding XML file.}
+
+    The file markup.pl in src should fulfill this particular requirement.
+    
+      - In a pipe:
+         
+	   % cat test | markup.pl | less
+
+      - To stdout:
+      
+           % markup.pl test | less
+
+      - To a file
+      
+           % markup.pl test -o test.xml
+
+    You may also pass it the argument \code{--no-links} to turn off link 
+    processing as required by the spec.
+
+  # \i{Any libraries you use beyond those that are normally part of an
+    installation of your chosen programming language.}
+
+    Everything used is core Perl according to \code{Module::CoreList}.
+
+  # \i{Any build instructions or scripts are needed to build the driver
+    program or instructions how to run it if it requires no separate
+    building.}
+
+    Since this is Perl, there really aren't any build instructions.  The 
+    shebang \node{For the users of that other operating system out there, 
+    shebang it the \code{#!/usr/bin/perl} at the top of the script.  It 
+    tells the system what program to use as an interpreter for the file.}
+    assumes that perl is in /usr/bin.  Test cases can be run by calling 
+    \code{prove} in the root directory of the project.  It should be able
+    to locate the test files located in the t directory.
+
+  # \i{Optionally, any notes about your experience implementing this
+    code: how you came up with your design, blind alleys you went up,
+    or surprising problems you ran into. Or anything else you want to
+    share.}
+
+    The commit log for this repository contains a good deal of these. I will
+    definitely be fleshing things about a bit more here as well.
