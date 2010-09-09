@@ -130,3 +130,29 @@ or arrays containing a token symbol followed by the text matched to produce that
 
 ** Markup::Parser
 
+Initially, designing a parser for Markup seemed to pose several rather annoying problems.
+Once being that the language appeared to have elements of context that would prevent a
+reasonable representation of the grammar that could be understood by yacc or bison.  A 
+more detailed analysis of the spec by a more schooled eye might reach a different
+conclusion.  As such, it seemed logical to build a recursive decent style parser 
+\note{Assuming that I have the definition right} rather than look for parser generator
+tools.
+
+Parsing is primarily handled by looking up each initial token in a hash and mapping 
+those tokens to a more specific processing function.  This helps to keep the primary 
+parsing loop free of extraneous \code{if ... elsif ... elsif ... else} combinations 
+and simplify the overall parsing logic greatly.  Each specific parsing function uses
+a combination of rewriting tokens in the token stream and recursion as a means of 
+handling the various Markup structures.  For instance, \code{\[} is converted from 
+a \code{LINK_BLOCK_START} token into \code{ESCAPE}, text, and \code{TAG_BLOCK_START}
+tokens.  This allows for reuse of the tagged markup code for links rather than
+rewriting special logic for them.
+
+Headers and indent sections are matched as single tokens by the tokenizer and parsed
+further within the parser.  Trying to match them as multiple tokens turned out to be 
+more problematic than it was worth.  Initial designs attempted to treat two and three
+space combinations as separate tokens.  Counting these tokens in the parser to 
+determine a degree of indention required a rather complex while loop which did little 
+more than determine the length of the initially matched block of white space. Header 
+tags caused a similar problem as they where initially treated as two kinds of a tokens,
+a '*' and a '* ' token.
