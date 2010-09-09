@@ -155,4 +155,16 @@ space combinations as separate tokens.  Counting these tokens in the parser to
 determine a degree of indention required a rather complex while loop which did little 
 more than determine the length of the initially matched block of white space. Header 
 tags caused a similar problem as they where initially treated as two kinds of a tokens,
-a '*' and a '* ' token.
+a '*' and a '* ' token.  
+
+Rather than try to deal with the added complexity of treating them as separate tokens, 
+it made more sense to treat indentation as a single token.  A can follow rule in the 
+tokenizer and a code to determine the length of matched text virtually eliminated the 
+parsing complexity.   Similar code, accounting for the extra space at the end of a 
+header, greatly simplified header parsing.
+
+Empty paragraph tokens parsed as normal and consumed when appending to the body of a
+\code{Module::Tree} object.  Any attempt to deal with these in the parse directly would
+require tracking checking the state of the node being currently constructed in every 
+place where a new child node is added.  As such, doing empty checking 
+\code{Module::Tree::append_node} greatly simplifies the calling code.
