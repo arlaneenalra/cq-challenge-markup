@@ -27,6 +27,7 @@ The challenge, as accepted it, was to provide:
     using he \code{perldoc} utility like so:
 
        % perldoc Module::Parser
+       % perldoc Module::Tree
 
     in location where perldoc can find the module in question.} documentation.
     A more detailed description will be provided towards the end of this 
@@ -98,3 +99,4 @@ The challenge, as accepted it, was to provide:
 
     The commit log for this repository contains a good deal of these. I will
     definitely be fleshing things about a bit more here as well.
+

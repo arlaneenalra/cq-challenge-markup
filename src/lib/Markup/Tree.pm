@@ -15,7 +15,7 @@ Markup::Tree - Stores the parse tree
 Markup::Tree nodes serve a dual purpose as state variables and the basis of 
 a simple AST.  When dealing with a Markup::Tree object, outside of the parser,
 only the name, verbatim, inline, subdocument and body members have any 
-significance.
+significance. 
 
 =cut
 
