@@ -49,15 +49,13 @@ When configured with a Tokenizer instance, this class converts a Markup token
 stream into a tree structure similar in nature to a DOM.
 
 =over
-=begin perl
 
 my $parse=Markup::Parse->new(
     tokenizer => Markup::Tokenizer->new());
 
 my $tree=$parse->parse($source);
 
-=end
-=back
+=back 
 
 =cut
 

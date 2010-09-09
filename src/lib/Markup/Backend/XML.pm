@@ -14,6 +14,10 @@ Markup::Backend::XML - Produces simple XML output from a Markup::Tree instance
 
 =head1 SYNOPSIS
 
+This module takes in a Markup::Tree instance and returns a string which contains
+a simple xml representation of the tree.  Tree nodes are walked in a recursive 
+manner with each node representing a separate arbitrary element in the xml
+document.
 
 =cut
 
@@ -84,6 +88,7 @@ sub string {
 	    $string.=$indent;
 	}
 
+	#closing tag
 	$string.=((@{$tree->body})?"</$name>":'');
     }
 
