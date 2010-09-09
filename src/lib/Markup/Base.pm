@@ -57,7 +57,7 @@ sub new {
     # set default values
     my %default_values=%{$self->default_values};
     foreach (keys %default_values) {
-	unless($self->{$_}) {
+	unless(defined($self->{$_})) {
 	    $self->{$_}=$default_values{$_};
 	}
     }
