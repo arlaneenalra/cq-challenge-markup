@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 
 # Mask any libraries in the current directory
+use FindBin;
+use lib "$FindBin::Bin/lib";
 no lib '.';
-use lib 'lib';
 
 # Petup a sane execution execution environment
 use strict;
