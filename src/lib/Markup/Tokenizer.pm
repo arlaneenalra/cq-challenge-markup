@@ -2,7 +2,7 @@ package Markup::Tokenizer;
 
 use strict;
 
-use fields qw//;
+use fields qw/links/;
 
 use base 'Markup::Base';
 
@@ -25,11 +25,15 @@ my @token_patterns=(
     [qr(>) => 'LINK_DEF_END'], # Match the end of a link block
     
     [qr(- ) => 'UNORDERED_LIST'], # Matches an unordered list
+
     [qr(# ) => 'ORDERED_LIST'], # Matches an ordered list
     
     [qr($/\s*($/)+) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
     [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
     );
+
+# A version of the token matcher that does not contain links
+my @token_patterns_no_links=grep { $_->[1]!~/^LINK/ } @token_patterns;
 
 # list tokens that may only appear after certain other tokens
 # +ANY+ means it must follow a token and +DELETE+ means, to 
@@ -53,8 +57,23 @@ Markup::Tokenizer - Takes a string and returns an array of tokens
 
 =head1 SYNOPSIS
 
+Tokenizer works in a manner akin to a lex based lexer.  An string passed in
+is converted into an array of token, matched text pairs which can then be feed
+to the parser and converted into an AST. 
+
+=over
+
+use Markup::Tokenizer;
+my $tokenizer=Markup::Tokenizer->new();
+
+=back
 
 =head1 METHODS
+
+=head2 new( links => 0 )
+
+There is one configuration option to the tokenizer which can be used to disable
+processing of links.  The default configuration will process links normally.
 
 =head2 tokenize($content)
 
@@ -69,6 +88,7 @@ sub tokenize {
     # Loop until there is not more content to match
     my @tokens;
     my $last_token=undef;
+
     while($content) {
 	
 	# Retrieve a token and add it to our
@@ -129,9 +149,12 @@ a token name and the matched text.
 
 sub next_token {
     my ($self, $content)=@_;
+
+    # Pick which set of rules we are working from
+    my @patterns=$self->links ? @token_patterns : @token_patterns_no_links;
     
     # Walk each pattern until we find one that matches
-    foreach (@token_patterns) {
+    foreach (@patterns) {
 	my ($regex,$token)=@$_;
 
 	# return the token and matched text
@@ -143,7 +166,7 @@ sub next_token {
     # We didn't match any tokens at the start of the line, let's see
     # if there are any further along
     my $matched;
-    foreach (@token_patterns) {
+    foreach (@patterns) {
 	my ($regex,$token)=@$_;
 
 	# does this regex match anywhere in the data?
@@ -170,7 +193,28 @@ sub next_token {
 
     # nothing left but text
     return ("", $content);
-
 }
+
+=head2 default_values
+
+Setup sane defaults.
+
+=cut 
+
+sub default_values {
+
+    return {
+	links => 1,
+    };
+}
+
+=head1 FIELDS
+
+=head2 links
+
+If this is set to true then links will be processed normally.  When set to false,
+link characters have no special meaning.
+
+=cut 
 
 1;
