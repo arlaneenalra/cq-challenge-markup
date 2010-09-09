@@ -52,10 +52,16 @@ sub append_node {
 	push @{$self->body}, $node;
 
     } else {
+	
+	# do we have an inline or verbatim node?
 	if($self->inline
 	    or $self->verbatim) {
 	    $self->body = $self->text;
+
 	} else {
+	    
+	    # only add a new node if there is some content
+	    # to put in the node, avoid empty <p/> tags
 	    if(@{$self->text}) {
 		# add a simple node
 		push @{$self->body}, Markup::Tree->new(

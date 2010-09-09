@@ -22,7 +22,9 @@ Markup::Tester - Used to run one of the test files as an individual test case
 
 =head1 SYNOPSIS
 
-Create a .t file named after the test data file you wish to run.
+If you create a .t file named after the test you wish to run containing the 
+following or similar code, this module will do a string equality check between
+the a source .txt file and the a result .xml file.
 
 use Markup::Tester;
 run_test($path_to_data_files, $0);

@@ -14,8 +14,8 @@ This is a catch all module for functions that are used in several locations.
 
 =cut
 
+# setup a list of functions that may be exported into using modules
 our @EXPORT_OK= qw/slurp/;
-
 
 
 =head1 FUNCTIONS 
@@ -37,12 +37,12 @@ sub slurp {
 	return <$file>;
     }
 
-
     open my $fh, '<', $file
 	or die "Unable to open file $file due to: $!";
     
     binmode $fh, ":encoding(utf8)"; # set utf8 encoding
     
+    # load the entire file into memory
     my $content=<$fh>;
 
     close $fh; # clean up properly
@@ -51,3 +51,4 @@ sub slurp {
 }
 
 
+1;
