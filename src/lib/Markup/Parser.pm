@@ -635,6 +635,7 @@ sub required_args {
 =head2 normalize
 
 Converts end of line characters and tabs into a values expected buy the tokenizer
+
 =cut
 
 sub normalize {
