@@ -171,10 +171,9 @@ sub next_token {
 
 	# does this regex match anywhere in the data?
 	if($content=~m/$regex/) {
-	    my $loc=index $content, $&;
 
-	    # DEBUG: Remove latter
-	    #print "MATCHED:$token => $loc$/";
+	    #find the index of the matched text
+	    my $loc=index $content, $&;
 
 	    # save off the earliest match we have
 	    if(!$matched) {
