@@ -100,3 +100,33 @@ The challenge, as accepted it, was to provide:
     The commit log for this repository contains a good deal of these. I will
     definitely be fleshing things about a bit more here as well.
 
+
+* Architectural Structure
+
+The processor is broken down into four components, two of which contain the AST 
+generation code, \code{Markup::Tokenizer} and \code{Markup::Parser}, one being the 
+output back-end, \code{Markup::Backend::XML}, and the last being the \code{markup.pl}
+driver script.  With the exception of \code{markup.pl}, each of these represents a
+pass through a representation of the source data.  The entirety of the source data 
+is loaded into a scalar variable and parsed as a whole to simplifying the parsing 
+process.
+
+** Markup::Tokenizer
+
+The tokenizer is really a lexer in the spirit of lex.  It uses an array of prioritized 
+regular expressions to match individual tokens within a string of text.  Once a token 
+is matched, the matched text is removed from the beginning of the string and a new 
+token search is started. If no token can be found at the start of the string, the 
+tokenizer attempts to find the earliest match for any token that it can match.  
+Anything between the current start of the string and that token is considered a raw 
+text token.
+
+Potential tokens are compared to a list of simple "must follow" rules to determine if 
+a given token is legal in the current location.  If a rule is found for the given token,
+it is compared to the previously matched token.  Tokens which are found to not follow
+a token listed in their rule are either deleted, as in the case of an emacs mode line,
+or converted into a text token.  When completed, \code{tokenize} will return an array 
+or arrays containing a token symbol followed by the text matched to produce that symbol.
+
+** Markup::Parser
+
