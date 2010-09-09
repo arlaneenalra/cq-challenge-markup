@@ -2,7 +2,7 @@ package Markup::Tree;
 
 use strict;
 
-use fields qw/indent text name body node escape verbatim inline subdocument/;
+use fields qw/indent text name body node verbatim inline subdocument/;
 
 use base 'Markup::Base';
 
@@ -12,8 +12,10 @@ Markup::Tree - Stores the parse tree
 
 =head1 SYNOPSIS
 
-This class is used by the parser to store context information
-about various nodes as they are being parsed.  
+Markup::Tree nodes serve a dual purpose as state variables and the basis of 
+a simple AST.  When dealing with a Markup::Tree object, outside of the parser,
+only the name, verbatim, inline, subdocument and body members have any 
+significance.
 
 =cut
 
@@ -81,7 +83,6 @@ sub default_values {
 	text => [],
 	body => [],
 	node => 'p',
-	escape => '',
 	name => 'body',
 	verbatim => '',
 	subdocument => '',
@@ -95,11 +96,6 @@ Meanings and uses for some of the public accessible fields
 =head2 name 
 
 Name for the enclosing block defined by this tree node.
-
-=head2 escape
-
-If this is set to true, we have previously seen an escape token
-and are waiting for the next token to process.
 
 =head2 indent
 
