@@ -598,6 +598,8 @@ sub _parse_indent {
 	    unshift @$tokens, ['DEDENT',$txt];
 	}
 
+	# we can't control the shift in a parent 
+	# context
 	unshift @$tokens, ['',''];
 	return ('','');
     }

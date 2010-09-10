@@ -140,7 +140,7 @@ elements of context that would prevent a reasonable representation of
 the grammar that could be understood by yacc or bison.  A more
 detailed analysis of the spec by a more schooled eye might reach a
 different conclusion.  As such, it seemed logical to build a recursive
-decent style parser \note{Assuming that I have the definition right}
+decent style parser \note{Assuming that I have the definition right.}
 rather than look for parser generator tools.
 
 Parsing is primarily handled by looking up each initial token in a
@@ -233,4 +233,81 @@ In combination with perl type globs, this allows us to modify the symbol table f
 a given package (which represents a class definition) and create field accessor
 methods at runtime.  The \code{lvalue} attribute also allows created accessor 
 methods to be assigned to as though they were variables rather than functions.
+
+
+* Implementation Notes
+
+   Source Statistics:
+     127   371  2328 ./src/lib/Markup/Tree.pm
+     116   316  2431 ./src/lib/Markup/Backend/XML.pm
+      74   210  1591 ./src/lib/Markup/Tester.pm
+      54   158   982 ./src/lib/Markup/Util.pm
+     219   766  5333 ./src/lib/Markup/Tokenizer.pm
+     653  1831 13732 ./src/lib/Markup/Parser.pm
+     139   334  2588 ./src/lib/Markup/Base.pm
+     124   318  2371 ./src/markup.pl
+      72   125   880 ./t/make_tests.pl
+    1578  4429 32236 total
+
+   Commit Count:  128
+
+While the commit count will be out of date buy the time I finish this
+document, the rest of the numbers should be pretty accurate.  It's
+somewhat amazing to me how little code there actually is in this
+parser.  The entirety of the lexing code fits in 219 lines with added
+noise form pod.  I'm very certain that there is someone who could do
+it in less and that it probably has been done in significantly less.
+It's still amazing too me how little perl you need to accomplish
+things.
+
+One of the things that I had wanted to do here build a parser that
+didn't use a parser generator.  I've built a few flex/bison based
+parsers and interpreters in the past but have not constructed any
+non-trivial parsers by hand.  Of course, as I stated above, the Markup
+specification did appear somewhat daunting when I tried to mentally
+think of it in terms of BNF form.  More than anything I had a mental
+block around trying to define a syntactic ruleset which used arbitrary
+whitespace.  If I were to try it now, I might be able to come up with
+something, having examined the rules in detail.
+
+De-denting also proved to be an interesing issue.  Keeping track of the 
+current degree of indentation and how much the next line has changed in 
+relation to the current one is not all that difficult.  Determining 
+exactly where in the parsing process you should de-dent and when to 
+de-dent without special indentation is an entirely different matter.
+
+One thing I that I really like about working with perl is the native 
+hash implementation.  Java has them as a container class, I know there 
+are C and C++ implementations that can be considred cannon but I really
+like not having to think about them in great detail.  It makes certain 
+kinds of things very easy to accomplish.  
+
+For instance, perl does not have the equivalent of a switch/case
+construct that other languages do.  My preferred method of
+accomplishing the same thing is to use a hash as a lookup table for
+function ref's.  I'm not really sure how they compare in performance
+to a chain of \code{if ... elsif} constructs but, they do make things
+a heck of a lot simpler to read.  Compare the v1.1 and v1.0 tag in my 
+git repository.  The \code{_parse_internal} funciton goes from being a
+rather opaque \code{if ... elsif} chain to a reasonable simple loop.
+Once you understand what the loop does you barely have to think about it
+anymore and use the \code{%parse_funciotion} hash to see how each of 
+token is mapped.
+
+As to the rest of the structure in \code{Markup::Parser}, I'm not really
+sure how much I like it.  The portions that do token rewriting are a 
+little tricky to understand if you just look at them cursorily.   For
+instance, the order of tokens being unshifted is reverse of what you might
+initially think it should be.  Since \code{unshift} behaves equivalently
+to \code{push} to the front side of an array, they have to be in that 
+order.
+
+There are also some places where returning through multiple layers of
+the call stack necessitated adding in a throwaway token.  The reasoning
+behind this might not be immedately obvious unless you can keep track of 
+the state of the processing loop in multiple layers of the call stack.
+
+
+Overall, I'd say this was a pretty interesting build.  It gave me a chance
+to try out a few things I hadn't done before.
 
