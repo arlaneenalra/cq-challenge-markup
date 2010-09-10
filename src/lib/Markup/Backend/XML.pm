@@ -70,9 +70,7 @@ sub string {
 
 	} else { # we have a tag with inline content
 	    $string.=$self->_encode_entities($_);
-
 	}
-	
     }
     
     # did we have an empty body tag?
