@@ -194,7 +194,43 @@ given \code{Markup::Tree} in a recursive manner.  Each tree node has a
 \code{body} member which may contain either a text scalar or a reference to a
 child \code{Markup::Tree} node.  Child nodes are processed by calling
 the \code{string} while text nodes are escaped and added to the output
-document.  Indentation is handled via a string of spaces constructed
-based on the current call depth.  Nodes with the \code{inline} flag
-set do not receive indentation.
+document.  
+
+Indentation is handled via a string of spaces constructed based on the
+current call depth.  Nodes with the \code{inline} flag set do not
+receive indentation or newlines.  Tags with the \code{subdocument}
+flag set append an extra layer of indentation to avoid skewing the
+indentation of a the parent node.
+
+** Markup::Tree
+
+\code{Markup::Tree} contains state for \code{Markup::Parser} and the AST
+representation of a parsed Markup document.  The internal members 
+\code{indent}, \code{text}, and \code{node} are used by the parser to 
+maintain state while processing.  \code{indent} stores the current degree
+of indentation while \code{text} and \code{node} are a representation of
+the node being constructed.  Once a node is completed, the \code{body} 
+member holds the children of the current node and \code{name} is self 
+exploratory.
+
+Using \code{Markup::Tree} in this manner does pollute the AST with data
+members that have very little to do with document structure.  The trade off
+from not having to create two data structures in parallel does seem to
+outweigh the added noise.
+
+** Markup::Base
+
+While this code could be considered "reinventing the wheel", the few features
+required by this parse did not warrant pulling in \code{Moose} or another
+OO framework.  \code{Markup::Base} attempts to provide a reasonable default
+constructor, a means of requiring certain arguments, and a means of specifying
+default values for fields.  
+
+The \code{AUTOLOAD} method is a special function in perl which handles calls 
+to undefined methods.  By explicitly turning off a portion of the strict pragma
+with \code{no strict 'refs';} it is possible to use a scalar as a reference value.
+In combination with perl type globs, this allows us to modify the symbol table for 
+a given package (which represents a class definition) and create field accessor
+methods at runtime.  The \code{lvalue} attribute also allows created accessor 
+methods to be assigned to as though they were variables rather than functions.
 
