@@ -39,7 +39,7 @@ sub append_text {
 
 Append a new internal node to the body of whatever node we are currently working
 on.  If no value is given, it assumes that text contains the value of the
-node to be appended
+node to be appended.
 
 =cut
 
@@ -97,7 +97,7 @@ sub default_values {
 
 =head1 FIELDS
     
-Meanings and uses for some of the public accessible fields
+Meanings and uses for some of the public accessible fields.
 
 =head2 name 
 
@@ -115,7 +115,7 @@ should be treated as pure text only.  (There are no child nodes.)
 =head2 inline
 
 If this is set to true, the indicated tag is treated as an inline tag 
-in the output
+in the output.
 
 =head2 subdocument
 

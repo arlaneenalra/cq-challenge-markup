@@ -22,7 +22,9 @@ valid arguments.
 
 =head2 new
 
-Semi-Universal constructor
+Calling new creates an instance of the derrived class, attempts to verify
+that all required parameters have been defined as arguments, and applies
+given default values to remaining parameters.  
 
 =cut
 
@@ -104,7 +106,8 @@ sub default_values {
 
 =head2 AUTOLOAD
 
-Catch undefined method calls to automagically create accessors.
+Catch undefined method calls to automagically create accessors for our 
+defined fields.
 
 =cut
 
