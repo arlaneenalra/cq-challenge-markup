@@ -48,49 +48,38 @@ sub string {
     # construct an indent block 
     my $indent= ' ' x (4 * $indent_val);
 
+    # don't apply indentation to inline nodes
     unless($tree->inline) {
 	$string.=$indent;
     }
 
-
-    if($tree->verbatim) {
-	my $text=join '', @{$tree->body};
-
-	$string.=($text?"<$name>":"<$name/>");
-	$string.=$self->_encode_entities($text);
-	$string.=$text?"</$name>":'';
-
-    } else {
-	# if we have no internals, start with an empty body
-	$string.=((@{$tree->body})?"<$name>":"<$name/>");
-	
-	# put a $/ after opening container tags
-	if($container{$name}) {
-	    $string.=$/;
-	}
-
-
-	# walk all of the nodes in this nodes body
-	foreach (@{$tree->body}) {
-	    
-	    if(ref $_) { # a complex tag
-		$string.=$self->string($_, $indent_val+1);
-
-	    } else { # we have a tag with inline content
-		$string.=$self->_encode_entities($_);
-
-	    }
-	    
-	}
-	
-	# did we have an empty body tag?
-	if($container{$name}) {
-	    $string.=$indent;
-	}
-
-	#closing tag
-	$string.=((@{$tree->body})?"</$name>":'');
+    # if we have no internals, start with an empty body
+    $string.=((@{$tree->body})?"<$name>":"<$name/>");
+    
+    # put a $/ after opening container tags
+    if($container{$name}) {
+	$string.=$/;
     }
+
+
+    # walk all of the nodes in this nodes body
+    foreach (@{$tree->body}) {
+	
+	if(ref $_) { # a complex tag
+	    $string.=$self->string($_, $indent_val+1);
+
+	} else { # we have a tag with inline content
+	    $string.=$self->_encode_entities($_);
+	}
+    }
+    
+    # did we have an empty body tag?
+    if($container{$name}) {
+	$string.=$indent;
+    }
+
+    #closing tag
+    $string.=((@{$tree->body})?"</$name>":'');
 
     # inline and empty tags to not get a $/ after them
     unless($tree->inline
