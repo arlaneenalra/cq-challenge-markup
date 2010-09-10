@@ -103,71 +103,98 @@ The challenge, as accepted it, was to provide:
 
 * Architectural Structure
 
-The processor is broken down into four components, two of which contain the AST 
-generation code, \code{Markup::Tokenizer} and \code{Markup::Parser}, one being the 
-output back-end, \code{Markup::Backend::XML}, and the last being the \code{markup.pl}
-driver script.  With the exception of \code{markup.pl}, each of these represents a
-pass through a representation of the source data.  The entirety of the source data 
-is loaded into a scalar variable and parsed as a whole to simplifying the parsing 
-process.
+The processor is broken down into four components, two of which
+contain the AST generation code, \code{Markup::Tokenizer} and
+\code{Markup::Parser}, one being the output back-end,
+\code{Markup::Backend::XML}, and the last being the \code{markup.pl}
+driver script.  With the exception of \code{markup.pl}, each of these
+represents a pass through a representation of the source data.  The
+entirety of the source data is loaded into a scalar variable and
+parsed as a whole to simplifying the parsing process.
 
 ** Markup::Tokenizer
 
-The tokenizer is really a lexer in the spirit of lex.  It uses an array of prioritized 
-regular expressions to match individual tokens within a string of text.  Once a token 
-is matched, the matched text is removed from the beginning of the string and a new 
-token search is started. If no token can be found at the start of the string, the 
-tokenizer attempts to find the earliest match for any token that it can match.  
-Anything between the current start of the string and that token is considered a raw 
-text token.
+The tokenizer is really a lexer in the spirit of lex.  It uses an
+array of prioritized regular expressions to match individual tokens
+within a string of text.  Once a token is matched, the matched text is
+removed from the beginning of the string and a new token search is
+started. If no token can be found at the start of the string, the
+tokenizer attempts to find the earliest match for any token that it
+can match.  Anything between the current start of the string and that
+token is considered a raw text token.
 
-Potential tokens are compared to a list of simple "must follow" rules to determine if 
-a given token is legal in the current location.  If a rule is found for the given token,
-it is compared to the previously matched token.  Tokens which are found to not follow
-a token listed in their rule are either deleted, as in the case of an emacs mode line,
-or converted into a text token.  When completed, \code{tokenize} will return an array 
-or arrays containing a token symbol followed by the text matched to produce that symbol.
+Potential tokens are compared to a list of simple "must follow" rules
+to determine if a given token is legal in the current location.  If a
+rule is found for the given token, it is compared to the previously
+matched token.  Tokens which are found to not follow a token listed in
+their rule are either deleted, as in the case of an emacs mode line,
+or converted into a text token.  When completed, \code{tokenize} will
+return an array or arrays containing a token symbol followed by the
+text matched to produce that symbol.
 
 ** Markup::Parser
 
-Initially, designing a parser for Markup seemed to pose several rather annoying problems.
-Once being that the language appeared to have elements of context that would prevent a
-reasonable representation of the grammar that could be understood by yacc or bison.  A 
-more detailed analysis of the spec by a more schooled eye might reach a different
-conclusion.  As such, it seemed logical to build a recursive decent style parser 
-\note{Assuming that I have the definition right} rather than look for parser generator
-tools.
+Initially, designing a parser for Markup seemed to pose several rather
+annoying problems.  Once being that the language appeared to have
+elements of context that would prevent a reasonable representation of
+the grammar that could be understood by yacc or bison.  A more
+detailed analysis of the spec by a more schooled eye might reach a
+different conclusion.  As such, it seemed logical to build a recursive
+decent style parser \note{Assuming that I have the definition right}
+rather than look for parser generator tools.
 
-Parsing is primarily handled by looking up each initial token in a hash and mapping 
-those tokens to a more specific processing function.  This helps to keep the primary 
-parsing loop free of extraneous \code{if ... elsif ... elsif ... else} combinations 
-and simplify the overall parsing logic greatly.  Each specific parsing function uses
-a combination of rewriting tokens in the token stream and recursion as a means of 
-handling the various Markup structures.  For instance, \code{\[} is converted from 
-a \code{LINK_BLOCK_START} token into \code{ESCAPE}, text, and \code{TAG_BLOCK_START}
-tokens.  This allows for reuse of the tagged markup code for links rather than
-rewriting special logic for them.
+Parsing is primarily handled by looking up each initial token in a
+hash and mapping those tokens to a more specific processing function.
+This helps to keep the primary parsing loop free of extraneous
+\code{if ... elsif ... elsif ... else} combinations and simplify the
+overall parsing logic greatly.  Each specific parsing function uses a
+combination of rewriting tokens in the token stream and recursion as a
+means of handling the various Markup structures.  For instance,
+\code{\[} is converted from a \code{LINK_BLOCK_START} token into
+\code{ESCAPE}, text, and \code{TAG_BLOCK_START} tokens.  This allows
+for reuse of the tagged markup code for links rather than rewriting
+special logic for them.
 
-Headers and indent sections are matched as single tokens by the tokenizer and parsed
-further within the parser.  Trying to match them as multiple tokens turned out to be 
-more problematic than it was worth.  Initial designs attempted to treat two and three
-space combinations as separate tokens.  Counting these tokens in the parser to 
-determine a degree of indention required a rather complex while loop which did little 
-more than determine the length of the initially matched block of white space. Header 
-tags caused a similar problem as they where initially treated as two kinds of a tokens,
-a '*' and a '* ' token.  
+Headers and indent sections are matched as single tokens by the
+tokenizer and parsed further within the parser.  Trying to match them
+as multiple tokens turned out to be more problematic than it was
+worth.  Initial designs attempted to treat two and three space
+combinations as separate tokens.  Counting these tokens in the parser
+to determine a degree of indention required a rather complex while
+loop which did little more than determine the length of the initially
+matched block of white space. Header tags caused a similar problem as
+they where initially treated as two kinds of a tokens, a '*' and a '*
+' token.
 
-Rather than try to deal with the added complexity of treating them as separate tokens, 
-it made more sense to treat indentation as a single token.  A can follow rule in the 
-tokenizer and a code to determine the length of matched text virtually eliminated the 
-parsing complexity.   Similar code, accounting for the extra space at the end of a 
-header, greatly simplified header parsing.
+Rather than try to deal with the added complexity of treating them as
+separate tokens, it made more sense to treat indentation as a single
+token.  A can follow rule in the tokenizer and a code to determine the
+length of matched text virtually eliminated the parsing complexity.
+Similar code, accounting for the extra space at the end of a header,
+greatly simplified header parsing.
 
-Empty paragraph tokens parsed as normal and consumed when appending to the body of a
-\code{Module::Tree} object.  Any attempt to deal with these in the parse directly would
-require tracking checking the state of the node being currently constructed in every 
-place where a new child node is added.  As such, doing empty checking 
+Empty paragraph tokens parsed as normal and consumed when appending to
+the body of a \code{Module::Tree} object.  Any attempt to deal with
+these in the parse directly would require tracking checking the state
+of the node being currently constructed in every place where a new
+child node is added.  As such, doing empty checking
 \code{Module::Tree::append_node} greatly simplifies the calling code.
 
 ** Markup::Backend::XML
+
+The trivial XML back-end is meant solely as a proof of concept and
+means of testing the entire processing stack.  Its output is designed
+to match the test xml documents provided with these instructions as
+closely as possible.  The one exception to this rule has to do with
+the way that links are processed, link_def elements are all on one
+line rather than spread out over several.
+
+As a general rule, constructing an output document involves walking a
+given \code{Markup::Tree} in a recursive manner.  Each tree node has a
+\code{body} member which may contain either a text scalar or a reference to a
+child \code{Markup::Tree} node.  Child nodes are processed by calling
+the \code{string} while text nodes are escaped and added to the output
+document.  Indentation is handled via a string of spaces constructed
+based on the current call depth.  Nodes with the \code{inline} flag
+set do not receive indentation.
 
