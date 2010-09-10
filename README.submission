@@ -276,3 +276,38 @@ relation to the current one is not all that difficult.  Determining
 exactly where in the parsing process you should de-dent and when to 
 de-dent without special indentation is an entirely different matter.
 
+One thing I that I really like about working with perl is the native 
+hash implementation.  Java has them as a container class, I know there 
+are C and C++ implementations that can be considred cannon but I really
+like not having to think about them in great detail.  It makes certain 
+kinds of things very easy to accomplish.  
+
+For instance, perl does not have the equivalent of a switch/case
+construct that other languages do.  My preferred method of
+accomplishing the same thing is to use a hash as a lookup table for
+function ref's.  I'm not really sure how they compare in performance
+to a chain of \code{if ... elsif} constructs but, they do make things
+a heck of a lot simpler to read.  Compare the v1.1 and v1.0 tag in my 
+git repository.  The \code{_parse_internal} funciton goes from being a
+rather opaque \code{if ... elsif} chain to a reasonable simple loop.
+Once you understand what the loop does you barely have to think about it
+anymore and use the \code{%parse_funciotion} hash to see how each of 
+token is mapped.
+
+As to the rest of the structure in \code{Markup::Parser}, I'm not really
+sure how much I like it.  The portions that do token rewriting are a 
+little tricky to understand if you just look at them cursorily.   For
+instance, the order of tokens being unshifted is reverse of what you might
+initially think it should be.  Since \code{unshift} behaves equivalently
+to \code{push} to the front side of an array, they have to be in that 
+order.
+
+There are also some places where returning through multiple layers of
+the call stack necessitated adding in a throwaway token.  The reasoning
+behind this might not be immedately obvious unless you can keep track of 
+the state of the processing loop in multiple layers of the call stack.
+
+
+Overall, I'd say this was a pretty interesting build.  It gave me a chance
+to try out a few things I hadn't done before.
+
