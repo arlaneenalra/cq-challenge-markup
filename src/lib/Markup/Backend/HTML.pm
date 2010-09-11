@@ -41,6 +41,12 @@ sub string {
     my $name=$tree->name;
     my $string='';
 
+    # do we have a link definition rather than a normal tag?
+    if($name eq 'link'
+       or $name eq 'link_def') {
+        return $self->process_link($tree);
+    }
+
     # render opening for current node
     $string.=$self->render_tag(1, $tree);
 
@@ -90,6 +96,7 @@ sub render_tag {
     # something else?
     if($html_tag{$name}) {
         $call=$start_end . '_' . $name;
+
         $tag.=$html->$call();
 
     } else {
@@ -105,6 +112,38 @@ sub render_tag {
     }      
 
     return $tag;
+}
+
+=head2 process_link
+
+Process links and link_def elements
+
+=cut
+
+sub process_link {
+    my ($self, $tree)=@_;
+
+    my $name=$tree->name;
+    my $string='';
+    
+    # # handle a link
+    # if($name eq 'link') {
+    #     my $key='';
+        
+    #     # process each body node in
+    #     foreach (@{$tree->body}) {
+    #         # do we have a key tag inside this link's
+    #         # body?
+    #         if($_->name eq 'key') {
+    #             $key=$self->string($_);
+    #         }
+    #     }
+    # }
+
+    
+    #TODO : Add link processing code here.
+    
+    return '';
 }
 
 =head2 default_values
