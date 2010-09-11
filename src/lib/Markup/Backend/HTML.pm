@@ -1,6 +1,7 @@
 package Markup::Backend::HTML;
 
 use strict;
+use warnings;
 
 use base 'Markup::Base';
 
@@ -28,7 +29,6 @@ Markup::Backend::HTML - Produces simple HTML output using CGI.pm as a generator
 
 =head2 string
 
-
 =cut
 
 sub string {
@@ -40,50 +40,50 @@ sub string {
 
     # if we are the root node, do a start html
     if($name eq 'body') {
-	$string .= $html->start_html();
+        $string .= $html->start_html();
     }
 
     # do we have an html tag or do we have 
     # something else?
     if($html_tag{$name}) {
-	my $call="start_$name";
-	$string.=$html->$call();
+        my $call="start_$name";
+        $string.=$html->$call();
     } else {
 
-	if($tree->inline) {
-	    $string.=$html->start_span({-class => $name});
-	} else {
-	    $string.=$html->start_div({-class => $name});
-	}
+        if($tree->inline) {
+            $string.=$html->start_span({-class => $name});
+        } else {
+            $string.=$html->start_div({-class => $name});
+        }
     }      
 
     # walk all of the nodes in this nodes body
     foreach (@{$tree->body}) {
-	
-	if(ref $_) { # a complex tag
-	    $string.=$self->string($_);
 
-	} else { # we have a tag with inline content
-	    $string.=$html->escapeHTML($_);
+        if(ref $_) { # a complex tag
+            $string.=$self->string($_);
 
-	}
-	
+        } else { # we have a tag with inline content
+            $string.=$html->escapeHTML($_);
+
+        }
+
     }
 
     if($html_tag{$name}) {
-	my $call="end_$name";
-	$string.=$html->$call();
+        my $call="end_$name";
+        $string.=$html->$call();
     } else {
-	if($tree->inline) {
-	    $string.=$html->end_span();
-	} else {
-	    $string.=$html->end_div();
-	}
-    }	
+        if($tree->inline) {
+            $string.=$html->end_span();
+        } else {
+            $string.=$html->end_div();
+        }
+    }
 
 
     if($name eq 'body') {
-	$string .= $html->end_html();
+        $string .= $html->end_html();
     }
 
     return $string;
@@ -91,15 +91,16 @@ sub string {
 
 
 =head2 default_values
-   
+    
 Define some sane defaults as per Markup::Base
 
 =cut
+
 sub default_values {
-   
+    
     return {
-	links => {},
-	html => CGI->new(),
+        links => {},
+        html => CGI->new(),
     };
 }
 
