@@ -43,19 +43,8 @@ sub string {
         $string .= $html->start_html();
     }
 
-    # do we have an html tag or do we have 
-    # something else?
-    if($html_tag{$name}) {
-        my $call="start_$name";
-        $string.=$html->$call();
-    } else {
-
-        if($tree->inline) {
-            $string.=$html->start_span({-class => $name});
-        } else {
-            $string.=$html->start_div({-class => $name});
-        }
-    }      
+    # render opening for current node
+    $string.=$self->render_tag(1, $tree);
 
     # walk all of the nodes in this nodes body
     foreach (@{$tree->body}) {
@@ -70,18 +59,9 @@ sub string {
 
     }
 
-    if($html_tag{$name}) {
-        my $call="end_$name";
-        $string.=$html->$call();
-    } else {
-        if($tree->inline) {
-            $string.=$html->end_span();
-        } else {
-            $string.=$html->end_div();
-        }
-    }
-
-
+    # render closing for current node
+    $string.=$self->render_tag(0, $tree);
+    
     if($name eq 'body') {
         $string .= $html->end_html();
     }
@@ -89,6 +69,43 @@ sub string {
     return $string;
 }
 
+
+=head2 render_tag
+
+Calls the appropriate start or end tag function as defined
+by CGI.  Accepts a boolean to indicate start or end and the
+tree node that is being rendered.
+
+=cut
+
+sub render_tag {
+    my ($self, $s_e, $tree)=@_;
+
+    my $html=$self->html();
+    my $name=$tree->name();
+    my $tag='';
+    my $call='';
+
+    my $start_end= $s_e ? 'start' : 'end';
+
+    # do we have an html tag or do we have 
+    # something else?
+    if($html_tag{$name}) {
+        $call=$start_end . '_' . $name;
+        $tag.=$html->$call();
+    } else {
+
+        if($tree->inline) {
+            $call=$start_end . '_span';
+        } else {
+            $call=$start_end . '_div';
+        }
+
+        $tag.=$html->$call({-class => $name});
+    }      
+
+    return $tag;
+}
 
 =head2 default_values
     
