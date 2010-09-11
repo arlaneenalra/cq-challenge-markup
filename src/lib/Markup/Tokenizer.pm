@@ -1,6 +1,7 @@
 package Markup::Tokenizer;
 
 use strict;
+use warnings;
 
 use fields qw/links/;
 
