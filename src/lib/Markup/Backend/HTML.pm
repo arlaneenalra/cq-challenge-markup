@@ -41,11 +41,6 @@ sub string {
     my $name=$tree->name;
     my $string='';
 
-    # if we are the root node, do a start html
-    if($name eq 'body') {
-        $string .= $html->start_html();
-    }
-
     # render opening for current node
     $string.=$self->render_tag(1, $tree);
 
@@ -62,13 +57,10 @@ sub string {
 
     # render closing for current node
     $string.=$self->render_tag(0, $tree);
-    
-    if($name eq 'body') {
-        $string .= $html->end_html();
-    }
 
     return $string;
 }
+
 
 =head2 render_tag
 
@@ -88,13 +80,21 @@ sub render_tag {
 
     my $start_end= $s_e ? 'start' : 'end';
 
+    # Are we at the top level of the document?
+    if($name eq 'body') {
+        $call=$start_end . '_html';
+        return $html->$call();
+    }
+
     # do we have an html tag or do we have 
     # something else?
     if($html_tag{$name}) {
         $call=$start_end . '_' . $name;
         $tag.=$html->$call();
-    } else {
 
+    } else {
+        
+        # is this an inline (span) tag or a container (div) tag
         if($tree->inline) {
             $call=$start_end . '_span';
         } else {
