@@ -48,7 +48,7 @@ my $tokenizer=Text::Markup::Tokenizer->new(links => $links);
 
 
 my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
-my $backend=Text::Markup::Backend::XML->new();
+my $backend=Text::Markup::Backend::HTML->new();
 
 # Do we have a file on the command line or should we be 
 # looking for a stream?
