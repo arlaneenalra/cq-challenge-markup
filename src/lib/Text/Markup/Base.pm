@@ -1,4 +1,4 @@
-package Markup::Base;
+package Text::Markup::Base;
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use fields qw//;
 
 =head1 NAME
 
-Markup::Base - Base class for Markup components.
+Text::Markup::Base - Base class for Text::Markup components.
 
 =head1 SYNOPSIS
 

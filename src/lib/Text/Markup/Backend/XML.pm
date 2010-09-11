@@ -1,8 +1,8 @@
-package Markup::Backend::XML;
+package Text::Markup::Backend::XML;
 
 use strict;
 
-use base 'Markup::Base';
+use base 'Text::Markup::Base';
 
 # list of tags that are considered containers and need to have
 # a $/ after the opening tag
@@ -10,11 +10,11 @@ my %container = map { $_ => 1 } qw/body blockquote ol ul li note/;
 
 =head1 NAME
 
-Markup::Backend::XML - Produces simple XML output from a Markup::Tree instance
+Text::Markup::Backend::XML - Produces simple XML output from a Text::Markup::Tree instance
 
 =head1 SYNOPSIS
 
-This module takes in a Markup::Tree instance and returns a string which contains
+This module takes in a Text::Markup::Tree instance and returns a string which contains
 a simple xml representation of the tree.  Tree nodes are walked in a recursive 
 manner with each node representing a separate arbitrary element in the xml
 document.
@@ -25,7 +25,7 @@ document.
 
 =head2 string
 
-Convert the passed in Markup::Tree structure into a xml string.
+Convert the passed in Text::Markup::Tree structure into a xml string.
 
 =cut
 
@@ -98,7 +98,7 @@ sub string {
 
 =head2 _encode_entities
 
-Used by Markup::Backend::XML to encode content that contains special
+Used by Text::Markup::Backend::XML to encode content that contains special
 characters
 
 =cut

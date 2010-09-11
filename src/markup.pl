@@ -10,11 +10,11 @@ use strict;
 use warnings;
 use diagnostics;
 
-use Markup::Parser;
-use Markup::Tokenizer;
-#use Markup::Backend::XML;
-use Markup::Backend::HTML;
-use Markup::Util qw/slurp/;
+use Text::Markup::Parser;
+use Text::Markup::Tokenizer;
+#use Text::Markup::Backend::XML;
+use Text::Markup::Backend::HTML;
+use Text::Markup::Util qw/slurp/;
 
 
 # Make sure that we are actually dealing with uft8
@@ -23,7 +23,7 @@ binmode STDOUT, ':encoding(utf8)';
 
 =head1 NAME
 
-markup.pl - Tool to convert text written using Markup into a simple 
+markup.pl - Tool to convert text written using Text::Markup into a simple 
 xml document.
 
 =head1 SYNOPSIS
@@ -44,11 +44,11 @@ cat test.txt | markup.pl
 # parse arguments into reasonable values
 my ($filename, $links, $output)=&parse_args(@ARGV);
 
-my $tokenizer=Markup::Tokenizer->new(links => $links);
+my $tokenizer=Text::Markup::Tokenizer->new(links => $links);
 
 
-my $parser=Markup::Parser->new(tokenizer => $tokenizer);
-my $backend=Markup::Backend::HTML->new();
+my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
+my $backend=Text::Markup::Backend::XML->new();
 
 # Do we have a file on the command line or should we be 
 # looking for a stream?

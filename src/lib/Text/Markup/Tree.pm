@@ -1,19 +1,19 @@
-package Markup::Tree;
+package Text::Markup::Tree;
 
 use strict;
 
 use fields qw/indent text name body node verbatim inline subdocument/;
 
-use base 'Markup::Base';
+use base 'Text::Markup::Base';
 
 =head1 NAME
 
-Markup::Tree - Stores the parse tree 
+Text::Markup::Tree - Stores the parse tree 
 
 =head1 SYNOPSIS
 
-Markup::Tree nodes serve a dual purpose as state variables and the basis of 
-a simple AST.  When dealing with a Markup::Tree object, outside of the parser,
+Text::Markup::Tree nodes serve a dual purpose as state variables and the basis of 
+a simple AST.  When dealing with a Text::Markup::Tree object, outside of the parser,
 only the name, verbatim, inline, subdocument and body members have any 
 significance. 
 
@@ -64,7 +64,7 @@ sub append_node {
             # to put in the node, avoid empty <p/> tags
             if(@{$self->text}) {
                 # add a simple node
-                push @{$self->body}, Markup::Tree->new(
+                push @{$self->body}, Text::Markup::Tree->new(
                     name => $self->node,
                     body => $self->text);
             }

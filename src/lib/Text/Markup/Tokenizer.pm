@@ -1,11 +1,11 @@
-package Markup::Tokenizer;
+package Text::Markup::Tokenizer;
 
 use strict;
 use warnings;
 
 use fields qw/links/;
 
-use base 'Markup::Base';
+use base 'Text::Markup::Base';
 
 # Definition of the various tokens 
 my @token_patterns=(
@@ -54,7 +54,7 @@ my %token_rules=(
 
 =head1 NAME
 
-Markup::Tokenizer - Takes a string and returns an array of tokens
+Text::Markup::Tokenizer - Takes a string and returns an array of tokens
 
 =head1 SYNOPSIS
 
@@ -64,8 +64,8 @@ to the parser and converted into an AST.
 
 =over
 
-use Markup::Tokenizer;
-my $tokenizer=Markup::Tokenizer->new();
+use Text::Markup::Tokenizer;
+my $tokenizer=Text::Markup::Tokenizer->new();
 
 =back
 
