@@ -99,43 +99,43 @@ sub _parse_internal {
     # If we have no more tokens, return the tree as it
     # currently exists
     return $context
-	unless @$tokens;
+        unless @$tokens;
 
 
     my $not_done=1; # set to true if we need to return to a parent
     
     # handle various tokens
     while(@$tokens and $not_done) {
-	my ($token, $txt)=@{$tokens->[0]};
+        my ($token, $txt)=@{$tokens->[0]};
 
-	my $no_shift=''; # set to true if a shift is not needed
+        my $no_shift=''; # set to true if a shift is not needed
 
-	# TODO: this might be better handled as a hash
+        # TODO: this might be better handled as a hash
 
-	if($token eq '') { # Handle simple text
+        if($token eq '') { # Handle simple text
 
-	    $context->append_text($txt);
+            $context->append_text($txt);
 
-	} elsif($parse_function{$token}) { 
+        } elsif($parse_function{$token}) { 
 
-	    # call the appropriate parse function for the given token
-	    ($not_done,$no_shift)=$parse_function{$token}->($self, $context, $tokens);
+            # call the appropriate parse function for the given token
+            ($not_done,$no_shift)=$parse_function{$token}->($self, $context, $tokens);
 
-	} else { # Catch all to be for use during implementation
+        } else { # Catch all to be for use during implementation
 
-	    warn "Unhandled token: $token";
+            warn "Unhandled token: $token";
 
-	    $context->append_text($txt);
-	}
-	
-	# move to the next token unless we are already there
-	unless($no_shift) {
-	    shift @$tokens;
-	}
+            $context->append_text($txt);
+        }
+        
+        # move to the next token unless we are already there
+        unless($no_shift) {
+            shift @$tokens;
+        }
     }
 
     if(@{$context->text}) {
-	$context->append_node();
+        $context->append_node();
     }
 
     return $context;
@@ -154,11 +154,11 @@ sub _remark {
     # we replace the paragraph that was being built with
     # a link_def
     $context->append_node(
-	Markup::Tree->new(
-	    name => 'link_def',
-	    indent => $context->indent,
-	    inline => 0,
-	    body => $context->text));	    
+        Markup::Tree->new(
+            name => 'link_def',
+            indent => $context->indent,
+            inline => 0,
+            body => $context->text));            
 
     return (1,'');
 }
@@ -175,7 +175,7 @@ sub _parse_tag_end {
     # only append the node if there is something 
     # to append
     if(@{$context->text}) {
-	$context->append_node();
+        $context->append_node();
     }
     
     return ('','');
@@ -198,31 +198,31 @@ sub _parse_eol {
     # are there any more tokens?
     if(@$tokens > 1) {
 
-	# if we are at an end of line, convert it to a space
-	$context->append_text(' ')
-	    if($token eq 'END_OF_LINE');
+        # if we are at an end of line, convert it to a space
+        $context->append_text(' ')
+            if($token eq 'END_OF_LINE');
 
-	# if we are at the end of a paragraph, append a node
-	$context->append_node()
-	    if($token eq 'END_OF_PARAGRAPH'
-	    and @{$context->text}); # make sure there is some text
+        # if we are at the end of a paragraph, append a node
+        $context->append_node()
+            if($token eq 'END_OF_PARAGRAPH'
+            and @{$context->text}); # make sure there is some text
 
-	# move to the next line
-	shift @$tokens;
+        # move to the next line
+        shift @$tokens;
 
-	# check indent on end of line
-	if($context->indent) {
-	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+        # check indent on end of line
+        if($context->indent) {
+            ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
 
-	} else {
-	    # we have already shifted once
-	    $no_shift=1;
-	}
-	
+        } else {
+            # we have already shifted once
+            $no_shift=1;
+        }
+        
     } else {
-	# if we are the last token, close out whatever 
-	# node we were working on
-	$context->append_node();
+        # if we are the last token, close out whatever 
+        # node we were working on
+        $context->append_node();
     }
 
     return ($not_done, $no_shift);
@@ -246,23 +246,23 @@ sub _parse_list {
 
     # Are we already processing a list of this type ?
     if($context->name eq $list_type) {
-	
-	# process the list tag and start a new list item
-	shift @{$tokens};
-	
-	$context->append_node(
-	    $self->_parse_internal(
-		Markup::Tree->new(
-		    name => 'li',
-		    indent => $context->indent),
-		$tokens));
+        
+        # process the list tag and start a new list item
+        shift @{$tokens};
+        
+        $context->append_node(
+            $self->_parse_internal(
+                Markup::Tree->new(
+                    name => 'li',
+                    indent => $context->indent),
+                $tokens));
 
-	return (1, '');
+        return (1, '');
     }
 
     # this node should look like a block quote
     if($context->name ne 'blockquote') {
-	warn 'Potentially bad state near ' . $context->text;
+        warn 'Potentially bad state near ' . $context->text;
     }
 
     # replace the a blockquote node with the list we are currently parsing  
@@ -284,13 +284,13 @@ sub _parse_escape {
     shift @$tokens;
 
     my ($token, $txt, $next_token, $next_txt)=
-	(@{$tokens->[0]}, @{$tokens->[1]});
+        (@{$tokens->[0]}, @{$tokens->[1]});
 
     # we have a normal escape here
     if($next_token ne 'TAG_BLOCK_START') {
-	$context->append_text($txt);
+        $context->append_text($txt);
 
-	return (1, '');
+        return (1, '');
     }
     
     # pop the next two tokens
@@ -300,14 +300,14 @@ sub _parse_escape {
     # start parsing the tagged text
 
     $context->append_text(
-	$self->_parse_internal(
-	  Markup::Tree->new(
-	      name => $txt,
-	      indent => $context->indent,
-	      inline => !$subdocument_node{$txt},
-	      subdocument => $subdocument_node{$txt}, # is this a subdocument node?
-	    ),
-	    $tokens));
+        $self->_parse_internal(
+          Markup::Tree->new(
+              name => $txt,
+              indent => $context->indent,
+              inline => !$subdocument_node{$txt},
+              subdocument => $subdocument_node{$txt}, # is this a subdocument node?
+            ),
+            $tokens));
 
     return (1, 1);
 }
@@ -345,11 +345,11 @@ sub _parse_link_middle {
 
     # only treat this as special if we are parsing a link
     if($context->name eq 'link') {
-	$self->_convert_to_tag($tokens, 'key');
+        $self->_convert_to_tag($tokens, 'key');
 
     } else {
-	# we don't have a link, so fall back to text
-	$tokens->[0]=['',$txt];
+        # we don't have a link, so fall back to text
+        $tokens->[0]=['',$txt];
     }
 
     return (1, 1);
@@ -391,21 +391,21 @@ sub _parse_link_end {
 
     # are we ending a LINK_BLOCK with a key?
     if($context->name eq 'key') {
-	
-	# drop out of the key and reprocess in the next
-	# layer up
-	unshift @$tokens, ['', ''];
-	return ('', 1);
+        
+        # drop out of the key and reprocess in the next
+        # layer up
+        unshift @$tokens, ['', ''];
+        return ('', 1);
 
     } elsif($context->name eq 'link') {
-	# we have a link, so, convert this token into a tag block
-	# ending
-	$tokens->[0]=['TAG_BLOCK_END', '}'];
+        # we have a link, so, convert this token into a tag block
+        # ending
+        $tokens->[0]=['TAG_BLOCK_END', '}'];
 
     } else {
-	# we don't have a link or a key, so,
-	# convert this block to text
-	$tokens->[0]=['', $txt];
+        # we don't have a link or a key, so,
+        # convert this block to text
+        $tokens->[0]=['', $txt];
 
     }
 
@@ -433,26 +433,26 @@ sub _parse_link_def_end {
     # we need to convert the enclosing paragraph into
     # a link_def element
     if(@$tokens>1) {
-	my ($next_token, $next_txt)=@{$tokens->[1]};
-	
-	$real_link_def=($next_token eq 'END_OF_LINE'
-			or $next_token eq 'END_OF_PARAGRAPH');
+        my ($next_token, $next_txt)=@{$tokens->[1]};
+        
+        $real_link_def=($next_token eq 'END_OF_LINE'
+                        or $next_token eq 'END_OF_PARAGRAPH');
     }
     
     # if we have a real link, replace the paragraph we are in
     # with a link_def using a REMARK_LINK_DEF token
 
     if($real_link_def
-	and $context->name eq 'url') {
+        and $context->name eq 'url') {
 
-	# pop the LINK_DEF_END token and replace it 
-	shift @$tokens;
-	unshift @$tokens, ['REMARK_LINK_DEF', 'link_def'];
-	$not_done='';
+        # pop the LINK_DEF_END token and replace it 
+        shift @$tokens;
+        unshift @$tokens, ['REMARK_LINK_DEF', 'link_def'];
+        $not_done='';
 
     } else {
-	# Convert this token to text
-	$tokens->[0]=['', $txt];
+        # Convert this token to text
+        $tokens->[0]=['', $txt];
     }
 
     return ($not_done, 1);
@@ -470,47 +470,47 @@ sub _parse_verbatim {
     # If we have no more tokens, return the tree as it
     # currently exists
     return $context
-	unless @$tokens;
+        unless @$tokens;
 
 
     my $not_done=1; # set to true if we need to return to a parent
     
     # handle various tokens
     while(@$tokens and $not_done) {
-	my ($token, $txt)=@{$tokens->[0]};
+        my ($token, $txt)=@{$tokens->[0]};
 
-	my $no_shift=''; # set to true if a shift is not needed
+        my $no_shift=''; # set to true if a shift is not needed
 
-	# TODO: this might be better handled as a hash
+        # TODO: this might be better handled as a hash
 
-	if($token eq 'INDENT') { # Handle a block quote
-	    ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-	    
-	} elsif($token eq 'END_OF_LINE'
-	    or $token eq 'END_OF_PARAGRAPH') {
+        if($token eq 'INDENT') { # Handle a block quote
+            ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+            
+        } elsif($token eq 'END_OF_LINE'
+            or $token eq 'END_OF_PARAGRAPH') {
 
-	    if(@$tokens>1) {
+            if(@$tokens>1) {
 
-		shift @$tokens;
+                shift @$tokens;
 
-		# parse the next object and see if we have a decrease in indentation
-		($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-		
-		# a not done here means we are at the same indentation
-		# level
-		if($not_done) {
-		    $context->append_text($txt);
-		}
-	    }
+                # parse the next object and see if we have a decrease in indentation
+                ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
+                
+                # a not done here means we are at the same indentation
+                # level
+                if($not_done) {
+                    $context->append_text($txt);
+                }
+            }
 
-	} else {
+        } else {
 
-	    $context->append_text($txt);
-	}
-	
-	unless($no_shift) {
-	    shift @$tokens;
-	}
+            $context->append_text($txt);
+        }
+        
+        unless($no_shift) {
+            shift @$tokens;
+        }
     }
     
     $context->append_node();
@@ -537,7 +537,7 @@ sub _parse_indent {
 
     # make sure we are looking at an indent token
     if($token ne 'INDENT') {
-	$count=0;
+        $count=0;
     }
 
     # how different than the current indention are we?
@@ -545,63 +545,63 @@ sub _parse_indent {
 
     # do we have a new indentation level?
     if($diff == 0) {
-	# we are at the same indent level, do nothing
-	return (1,'');
+        # we are at the same indent level, do nothing
+        return (1,'');
 
     } elsif($diff > 0) {
-	# are we already parsing a verbatim block?
-	if($context->verbatim) {
-	    # set this token to a text token and 
-	    # plug in the number of spaces minus current indention level
-	    @{$tokens->[0]}=('', ' ' x $diff);
-	    return (1,1);
-	}
+        # are we already parsing a verbatim block?
+        if($context->verbatim) {
+            # set this token to a text token and 
+            # plug in the number of spaces minus current indention level
+            @{$tokens->[0]}=('', ' ' x $diff);
+            return (1,1);
+        }
 
-	# do we have a blockquote or verbatim?
+        # do we have a blockquote or verbatim?
 
-	if($diff == 2) {
-	    # blockquote
-    	    $context->append_node(
-	    	$self->_parse_internal(
-		    Markup::Tree->new(
-			name => 'blockquote',
-			indent => $context->indent+2),
-	    	    $tokens));
+        if($diff == 2) {
+            # blockquote
+                $context->append_node(
+                    $self->_parse_internal(
+                    Markup::Tree->new(
+                        name => 'blockquote',
+                        indent => $context->indent+2),
+                        $tokens));
 
 
-	    return (1,1);
+            return (1,1);
 
-	} elsif($diff >= 3) {
-	    # replace the current token with a text token
-	    @{$tokens->[0]}=('',' ' x ($diff-3));
-	    
-	    # verbatim
-    	    $context->append_node(
-	    	$self->_parse_verbatim(
-	    	    Markup::Tree->new(
-	    		name => 'pre',
-	    		indent => $context->indent+3,
-			verbatim => 1),
-		    $tokens));
-	    return (1,1);
-	}
+        } elsif($diff >= 3) {
+            # replace the current token with a text token
+            @{$tokens->[0]}=('',' ' x ($diff-3));
+            
+            # verbatim
+                $context->append_node(
+                    $self->_parse_verbatim(
+                        Markup::Tree->new(
+                            name => 'pre',
+                            indent => $context->indent+3,
+                        verbatim => 1),
+                    $tokens));
+            return (1,1);
+        }
     } else { # moving back up an indention level
-	
-	# no_shift won't propgate to parent scope
-	# so we do this to avoid getting shifted
+        
+        # no_shift won't propgate to parent scope
+        # so we do this to avoid getting shifted
 
-	# lists need to dedent twice
-	if($context->name eq 'li'
-	    and $diff < -2) {
-	    
-	    unshift @$tokens, ['DEDENT',$txt];
-	    unshift @$tokens, ['DEDENT',$txt];
-	}
+        # lists need to dedent twice
+        if($context->name eq 'li'
+            and $diff < -2) {
+            
+            unshift @$tokens, ['DEDENT',$txt];
+            unshift @$tokens, ['DEDENT',$txt];
+        }
 
-	# we can't control the shift in a parent 
-	# context
-	unshift @$tokens, ['',''];
-	return ('','');
+        # we can't control the shift in a parent 
+        # context
+        unshift @$tokens, ['',''];
+        return ('','');
     }
 }
 

@@ -34,11 +34,11 @@ sub slurp {
     # If we were passed a file handle, slurp it and return
     # otherwise, we treat our argument as a filename.
     if(ref $file eq 'GLOB') {
-	return <$file>;
+        return <$file>;
     }
 
     open my $fh, '<', $file
-	or die "Unable to open file $file due to: $!";
+        or die "Unable to open file $file due to: $!";
     
     binmode $fh, ":encoding(utf8)"; # set utf8 encoding
     
