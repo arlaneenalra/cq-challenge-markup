@@ -90,50 +90,50 @@ sub tokenize {
     my $last_token=undef;
 
     while($content) {
-	
-	# Retrieve a token and add it to our
-	# list of tokens
-	my ($token, $txt)=$self->next_token($content);
+        
+        # Retrieve a token and add it to our
+        # list of tokens
+        my ($token, $txt)=$self->next_token($content);
 
-	my $delete='';
-	my $match=1;
-	
-	# strip matched text from the front of our content
-	$content=substr $content, length $txt;
+        my $delete='';
+        my $match=1;
+        
+        # strip matched text from the front of our content
+        $content=substr $content, length $txt;
 
-	# check for special case tokens
-	if($token_rules{$token}) {
-	    
-	    # look for any matching rules
-	    $match=grep { 
+        # check for special case tokens
+        if($token_rules{$token}) {
+            
+            # look for any matching rules
+            $match=grep { 
 
-		(defined($last_token) and
-		    ($last_token eq $_ or $_ eq '+ANY+'))
+                (defined($last_token) and
+                    ($last_token eq $_ or $_ eq '+ANY+'))
 
-		    or (!defined($last_token) and
-			$_ eq '+UNDEF+')
+                    or (!defined($last_token) and
+                        $_ eq '+UNDEF+')
 
-	    } @{$token_rules{$token}};
+            } @{$token_rules{$token}};
 
-	    # should this token be deleted?
-	    $delete=grep {
-		$_ eq '+DELETE+'
-	    } @{$token_rules{$token}};
-	    
-	    # we only do the delete if we didn't match
-	    $delete=($delete and !$match);
-	    
-	    unless($match) {
-		# convert special case tokens to plain text
-		$token='';
-	    }
-	}
+            # should this token be deleted?
+            $delete=grep {
+                $_ eq '+DELETE+'
+            } @{$token_rules{$token}};
+            
+            # we only do the delete if we didn't match
+            $delete=($delete and !$match);
+            
+            unless($match) {
+                # convert special case tokens to plain text
+                $token='';
+            }
+        }
 
-	# Should we completely ignore this token?
-	unless($delete) {
-	    $last_token=$token;
-	    push @tokens, [$token, $txt];
-	}
+        # Should we completely ignore this token?
+        unless($delete) {
+            $last_token=$token;
+            push @tokens, [$token, $txt];
+        }
 
     }
     
@@ -155,39 +155,39 @@ sub next_token {
     
     # Walk each pattern until we find one that matches
     foreach (@patterns) {
-	my ($regex,$token)=@$_;
+        my ($regex,$token)=@$_;
 
-	# return the token and matched text
-	if ($content=~/^$regex/) {
-	    return ($token, $&);
-	}
+        # return the token and matched text
+        if ($content=~/^$regex/) {
+            return ($token, $&);
+        }
     }
 
     # We didn't match any tokens at the start of the line, let's see
     # if there are any further along
     my $matched;
     foreach (@patterns) {
-	my ($regex,$token)=@$_;
+        my ($regex,$token)=@$_;
 
-	# does this regex match anywhere in the data?
-	if($content=~m/$regex/) {
+        # does this regex match anywhere in the data?
+        if($content=~m/$regex/) {
 
-	    #find the index of the matched text
-	    my $loc=index $content, $&;
+            #find the index of the matched text
+            my $loc=index $content, $&;
 
-	    # save off the earliest match we have
-	    if(!$matched) {
-		$matched=$loc;
-	    } else {
-		# is this match earlier than the last one . . .
-		$matched=$loc < $matched ? $loc : $matched;
-	    }
-	}
+            # save off the earliest match we have
+            if(!$matched) {
+                $matched=$loc;
+            } else {
+                # is this match earlier than the last one . . .
+                $matched=$loc < $matched ? $loc : $matched;
+            }
+        }
     }
 
     # if any match succeded, then return a substring to that offset
     if(defined($matched)) {
-	return ("", substr $content,0,$matched);
+        return ("", substr $content,0,$matched);
     }
 
     # nothing left but text
@@ -203,7 +203,7 @@ Setup sane defaults.
 sub default_values {
 
     return {
-	links => 1,
+        links => 1,
     };
 }
 

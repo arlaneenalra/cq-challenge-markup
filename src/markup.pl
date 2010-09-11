@@ -61,7 +61,7 @@ my $string=$backend->string($tree);
 # write to a given file or STDOUT
 if($output) {
     open OUTPUT, '>', $output
-	or die "Unable to open output file $@";
+        or die "Unable to open output file $@";
     
     binmode OUTPUT, ':encoding(utf8)';
     
@@ -90,31 +90,31 @@ sub parse_args {
     
     # if we have any arguments, parse them
     if(@args) {
-	
-	# did they ask for no links?
-	( $links )=grep { $args[$_] eq '--no-links' } 0..$#args;
-	
-	# clear the --no-links from the array
-	if(defined($links)) {
-	    $args[$links]='';
-	    $links=0;
-	}
-	
-	
-	# look for -o 
-	my ( $o_index )=grep { $args[$_] eq '-o' } 0..$#args;
+        
+        # did they ask for no links?
+        ( $links )=grep { $args[$_] eq '--no-links' } 0..$#args;
+        
+        # clear the --no-links from the array
+        if(defined($links)) {
+            $args[$links]='';
+            $links=0;
+        }
+        
+        
+        # look for -o 
+        my ( $o_index )=grep { $args[$_] eq '-o' } 0..$#args;
 
-	# did we match?
-	if(defined($o_index)) {
-	    $output=$args[$o_index+1];
-	    
-	    # clear -o filename from the array
-	    $args[$o_index]='';
-	    $args[$o_index+1]='';
-	}
+        # did we match?
+        if(defined($o_index)) {
+            $output=$args[$o_index+1];
+            
+            # clear -o filename from the array
+            $args[$o_index]='';
+            $args[$o_index+1]='';
+        }
 
-	# treat the first true value as an input file name
-	($filename)=grep { $_ } @args;
+        # treat the first true value as an input file name
+        ($filename)=grep { $_ } @args;
 
     }
     

@@ -33,7 +33,7 @@ sub new {
     
     # Setup the fields hash
     $self=fields::new($self)
-	unless ref $self;
+        unless ref $self;
     
     # Convert our arguments to a hash
     my %args=@args;
@@ -41,27 +41,27 @@ sub new {
     # Map passed in arguments into their appropriate
     # locations
     foreach (keys %args) {
-	$self->{$_}=$args{$_};
+        $self->{$_}=$args{$_};
     }
 
     # Make sure that we've set all required arguments
     my @required_args=$self->required_args;
     my @not_set;
     foreach (@required_args) {
-	push @not_set, $_
-	    unless exists $args{$_};
+        push @not_set, $_
+            unless exists $args{$_};
     }
 
     if(@not_set) {
-	die 'Required argument' . (@not_set>1? 's ' : ' ') . join(', ', @not_set) . ' have not been propperly set.';
+        die 'Required argument' . (@not_set>1? 's ' : ' ') . join(', ', @not_set) . ' have not been propperly set.';
     }
 
     # set default values
     my %default_values=%{$self->default_values};
     foreach (keys %default_values) {
-	unless(defined($self->{$_})) {
-	    $self->{$_}=$default_values{$_};
-	}
+        unless(defined($self->{$_})) {
+            $self->{$_}=$default_values{$_};
+        }
     }
     
     return $self;
@@ -79,7 +79,7 @@ sub reset {
     my %default_values=%{$self->default_values};
 
     foreach (@fields) {
-	$self->{$_}=$default_values{$_};
+        $self->{$_}=$default_values{$_};
     }
 }
 
@@ -124,11 +124,11 @@ sub AUTOLOAD : lvalue {
     
     # turn off strict so we can 
     {
-	no strict 'refs';
-	*$AUTOLOAD=sub : lvalue {
-	    my ($self)=@_;
-	    $self->{$name};
-	};
+        no strict 'refs';
+        *$AUTOLOAD=sub : lvalue {
+            my ($self)=@_;
+            $self->{$name};
+        };
     }
 
     # Call our newly mented routine

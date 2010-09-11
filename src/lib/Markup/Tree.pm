@@ -31,7 +31,7 @@ sub append_text {
     my ($self, $text)=@_;
     
     if($text ne '') {
-	push @{$self->text}, $text;
+        push @{$self->text}, $text;
     }
 }
 
@@ -48,27 +48,27 @@ sub append_node {
 
     # do we have a simple or complex node
     if($node) {
-       	# add a complex node
-	push @{$self->body}, $node;
+               # add a complex node
+        push @{$self->body}, $node;
 
     } else {
-	
-	# do we have an inline or verbatim node?
-	if($self->inline
-	    or $self->verbatim) {
-	    $self->body = $self->text;
+        
+        # do we have an inline or verbatim node?
+        if($self->inline
+            or $self->verbatim) {
+            $self->body = $self->text;
 
-	} else {
-	    
-	    # only add a new node if there is some content
-	    # to put in the node, avoid empty <p/> tags
-	    if(@{$self->text}) {
-		# add a simple node
-		push @{$self->body}, Markup::Tree->new(
-		    name => $self->node,
-		    body => $self->text);
-	    }
-	}
+        } else {
+            
+            # only add a new node if there is some content
+            # to put in the node, avoid empty <p/> tags
+            if(@{$self->text}) {
+                # add a simple node
+                push @{$self->body}, Markup::Tree->new(
+                    name => $self->node,
+                    body => $self->text);
+            }
+        }
     }
     
 
@@ -85,13 +85,13 @@ Setup sane defaults.
 sub default_values {
 
     return {
-	indent => 0,
-	text => [],
-	body => [],
-	node => 'p',
-	name => 'body',
-	verbatim => '',
-	subdocument => '',
+        indent => 0,
+        text => [],
+        body => [],
+        node => 'p',
+        name => 'body',
+        verbatim => '',
+        subdocument => '',
     };
 }
 

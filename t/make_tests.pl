@@ -55,17 +55,17 @@ sub get_tests {
     my ($path)=@_;
 
     opendir DIR, $path
-	or die "Unable to open test dir: $@";
+        or die "Unable to open test dir: $@";
     
     # all test cases start as txt files
     my @tests=grep {
-	m/\.txt$/;
+        m/\.txt$/;
     } readdir DIR;
     
     closedir DIR;
 
     foreach (@tests) {
-	$_=~s/\.txt$//;  # get rid the txt file endings
+        $_=~s/\.txt$//;  # get rid the txt file endings
     }
 
     return sort @tests;

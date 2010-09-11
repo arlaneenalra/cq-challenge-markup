@@ -40,8 +40,8 @@ sub string {
     
     # we need to add an extra newline for subdocuments
     if($tree->subdocument) {
-	$string.=$/;
-	$indent_val-=1; # remove the extraneous indent added 
+        $string.=$/;
+        $indent_val-=1; # remove the extraneous indent added 
     }
 
 
@@ -50,7 +50,7 @@ sub string {
 
     # don't apply indentation to inline nodes
     unless($tree->inline) {
-	$string.=$indent;
+        $string.=$indent;
     }
 
     # if we have no internals, start with an empty body
@@ -58,24 +58,24 @@ sub string {
     
     # put a $/ after opening container tags
     if($container{$name}) {
-	$string.=$/;
+        $string.=$/;
     }
 
 
     # walk all of the nodes in this nodes body
     foreach (@{$tree->body}) {
-	
-	if(ref $_) { # a complex tag
-	    $string.=$self->string($_, $indent_val+1);
+        
+        if(ref $_) { # a complex tag
+            $string.=$self->string($_, $indent_val+1);
 
-	} else { # we have a tag with inline content
-	    $string.=$self->_encode_entities($_);
-	}
+        } else { # we have a tag with inline content
+            $string.=$self->_encode_entities($_);
+        }
     }
     
     # did we have an empty body tag?
     if($container{$name}) {
-	$string.=$indent;
+        $string.=$indent;
     }
 
     #closing tag
@@ -83,13 +83,13 @@ sub string {
 
     # inline and empty tags to not get a $/ after them
     unless($tree->inline
-	or (!@{$tree->body} and $container{$name})) {
-	$string.=$/;
+        or (!@{$tree->body} and $container{$name})) {
+        $string.=$/;
     }
     
     # properly indent the next line
     if($tree->subdocument) {
-	$string.=$indent;
+        $string.=$indent;
     }
 
     return $string;
