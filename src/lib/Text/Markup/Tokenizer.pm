@@ -138,9 +138,6 @@ sub tokenize {
 
     }
 
-    use Data::Dumper;
-    print &Dumper(\@tokens);
-    
     return @tokens;
 }
 
