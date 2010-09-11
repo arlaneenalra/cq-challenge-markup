@@ -137,6 +137,9 @@ sub tokenize {
         }
 
     }
+
+    use Data::Dumper;
+    print &Dumper(\@tokens);
     
     return @tokens;
 }
@@ -159,8 +162,8 @@ sub next_token {
         my ($regex,$token)=@$_;
 
         # return the token and matched text
-        if ($content=~/^$regex/) {
-            return ($token, $&);
+        if ($content=~/^($regex)/) {
+            return ($token, $1);
         }
     }
 
@@ -171,24 +174,20 @@ sub next_token {
         my ($regex,$token)=@$_;
 
         # does this regex match anywhere in the data?
-        if($content=~m/$regex/) {
-
-            #find the index of the matched text
-            my $loc=index $content, $&;
-
-            # save off the earliest match we have
-            if(!$matched) {
-                $matched=$loc;
-            } else {
-                # is this match earlier than the last one . . .
-                $matched=$loc < $matched ? $loc : $matched;
+        if($content=~m/(\A.*?)$regex/) {
+            my $prematch=$1;
+            
+            # we want the shortest possible prematch
+            if(!$matched or
+               ($prematch and (length $matched > length $prematch))) {
+                $matched=$prematch;
             }
         }
     }
 
-    # if any match succeded, then return a substring to that offset
+    # did we find another token further along?
     if(defined($matched)) {
-        return ("", substr $content,0,$matched);
+        return ("", $matched);
     }
 
     # nothing left but text
