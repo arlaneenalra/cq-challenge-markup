@@ -1,4 +1,4 @@
-package Markup::Util;
+package Text::Markup::Util;
 
 use strict;
 
@@ -6,7 +6,7 @@ use base 'Exporter';
 
 =head1 NAME
 
-Markup::Util - A collection of utility methods used throughout the Markup system
+Text::Markup::Util - A collection of utility methods used throughout the Text::Markup system
 
 =head1 SYNOPSIS
 

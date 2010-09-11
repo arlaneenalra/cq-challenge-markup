@@ -1,4 +1,4 @@
-package Markup::Tester;
+package Text::Markup::Tester;
 
 use strict;
 use warnings;
@@ -9,16 +9,16 @@ use base 'Exporter';
 our @EXPORT=qw/run_test/;
 
 # Required for the test suite
-use Markup::Parser;
-use Markup::Tokenizer;
-use Markup::Backend::XML;
-use Markup::Util qw/slurp/;
+use Text::Markup::Parser;
+use Text::Markup::Tokenizer;
+use Text::Markup::Backend::XML;
+use Text::Markup::Util qw/slurp/;
 
 use Test::Simple tests => 1;
 
 =head1 NAME
 
-Markup::Tester - Used to run one of the test files as an individual test case
+Text::Markup::Tester - Used to run one of the test files as an individual test case
 
 =head1 SYNOPSIS
 
@@ -26,7 +26,7 @@ If you create a .t file named after the test you wish to run containing the
 following or similar code, this module will do a string equality check between
 the a source .txt file and the a result .xml file.
 
-use Markup::Tester;
+use Text::Markup::Tester;
 run_test($path_to_data_files, $0);
 
 =cut
@@ -52,9 +52,9 @@ sub run_test {
     # construct a new instance of everything to make sure 
     # various portions of the tests do not interactive with 
     # each other in negative or positive manners
-    my $tokenizer=Markup::Tokenizer->new();
-    my $parser=Markup::Parser->new(tokenizer => $tokenizer);
-    my $backend=Markup::Backend::XML->new();
+    my $tokenizer=Text::Markup::Tokenizer->new();
+    my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
+    my $backend=Text::Markup::Backend::XML->new();
     
     my $xml=&slurp("$path.xml");
     my $source=&slurp("$path.txt");
