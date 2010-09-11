@@ -9,28 +9,28 @@ use base 'Text::Markup::Base';
 
 # Definition of the various tokens 
 my @token_patterns=(
-    [qr(-\*-.*-\*-) => 'EMACS_MODE'], # Match this so we can ignore it
+    [qr/-\*-.*-\*-/ => 'EMACS_MODE'], # Match this so we can ignore it
 
-    [qr(\*\** ) => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
+    [qr/\*\** / => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
 
     [qr/   */ => 'INDENT'], # Matches 2 or more leading spaces 
 
-    [qr(\\) => 'ESCAPE'], # Match the escape character
-    [qr({) => 'TAG_BLOCK_START'], # Match the start of the a tag block
-    [qr(}) => 'TAG_BLOCK_END'], # Match the end of a tag block
+    [qr/\\/ => 'ESCAPE'], # Match the escape character
+    [qr/{/ => 'TAG_BLOCK_START'], # Match the start of the a tag block
+    [qr/}/ => 'TAG_BLOCK_END'], # Match the end of a tag block
 
-    [qr(\[) => 'LINK_BLOCK_START'], # Match the start of a link block
-    [qr(\|) => 'LINK_MIDDLE'], # Match middle of a link block
-    [qr(\]) => 'LINK_BLOCK_END'], # Match the end of a link block
+    [qr/\[/ => 'LINK_BLOCK_START'], # Match the start of a link block
+    [qr/\|/ => 'LINK_MIDDLE'], # Match middle of a link block
+    [qr/\]/ => 'LINK_BLOCK_END'], # Match the end of a link block
     [qr/ *</ => 'LINK_DEF_START'], # Match the end of a link block
-    [qr(>) => 'LINK_DEF_END'], # Match the end of a link block
+    [qr/>/ => 'LINK_DEF_END'], # Match the end of a link block
     
-    [qr(- ) => 'UNORDERED_LIST'], # Matches an unordered list
+    [qr/- / => 'UNORDERED_LIST'], # Matches an unordered list
 
-    [qr(# ) => 'ORDERED_LIST'], # Matches an ordered list
+    [qr/# / => 'ORDERED_LIST'], # Matches an ordered list
     
-    [qr($/\s*($/)+) => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
-    [qr($/) => 'END_OF_LINE'], # Matches an end of line marker
+    [qr{$/\s*(?:$/)+} => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
+    [qr{$/} => 'END_OF_LINE'], # Matches an end of line marker
     );
 
 # A version of the token matcher that does not contain links
@@ -137,7 +137,7 @@ sub tokenize {
         }
 
     }
-    
+
     return @tokens;
 }
 
@@ -159,8 +159,8 @@ sub next_token {
         my ($regex,$token)=@$_;
 
         # return the token and matched text
-        if ($content=~/^$regex/) {
-            return ($token, $&);
+        if ($content=~/^($regex)/) {
+            return ($token, $1);
         }
     }
 
@@ -171,24 +171,20 @@ sub next_token {
         my ($regex,$token)=@$_;
 
         # does this regex match anywhere in the data?
-        if($content=~m/$regex/) {
-
-            #find the index of the matched text
-            my $loc=index $content, $&;
-
-            # save off the earliest match we have
-            if(!$matched) {
-                $matched=$loc;
-            } else {
-                # is this match earlier than the last one . . .
-                $matched=$loc < $matched ? $loc : $matched;
+        if($content=~m/(\A.*?)$regex/) {
+            my $prematch=$1;
+            
+            # we want the shortest possible prematch
+            if(!$matched or
+               ($prematch and (length $matched > length $prematch))) {
+                $matched=$prematch;
             }
         }
     }
 
-    # if any match succeded, then return a substring to that offset
+    # did we find another token further along?
     if(defined($matched)) {
-        return ("", substr $content,0,$matched);
+        return ("", $matched);
     }
 
     # nothing left but text
