@@ -12,8 +12,7 @@ use diagnostics;
 
 use Text::Markup::Parser;
 use Text::Markup::Tokenizer;
-#use Text::Markup::Backend::XML;
-use Text::Markup::Backend::HTML;
+use Text::Markup::Backend::XML;
 use Text::Markup::Util qw/slurp/;
 
 
@@ -48,7 +47,7 @@ my $tokenizer=Text::Markup::Tokenizer->new(links => $links);
 
 
 my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
-my $backend=Text::Markup::Backend::HTML->new();
+my $backend=Text::Markup::Backend::XML->new();
 
 # Do we have a file on the command line or should we be 
 # looking for a stream?
