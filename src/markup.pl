@@ -41,7 +41,7 @@ and send output to stdout.
 
 =head2 --no-links 
     
-Turns of link processing for the given document.
+Turns off link processing for the given document.
 
 =head2 filename
 
