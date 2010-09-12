@@ -7,7 +7,7 @@ use base 'Text::Markup::Base';
 
 use Carp;
 
-use fields qw/encoding links/;
+use fields qw/encoding lang resources links/;
 
 # # list of tags that are considered containers and need to have
 # # a $/ after the opening tag
@@ -81,7 +81,7 @@ sub start_document {
     
     $header.='<meta charset="' . $self->encoding() . '" />';
     $header.='</head>';
-    $header.='<html>';
+    $header.='<html lang="' . $self->lang() . '">';
 
     return $header;
 }
@@ -223,8 +223,25 @@ sub default_values {
     return {
         links => {},
         encoding => 'utf-8',
+        lang => 'en',
+        #resources => [],
     };
 }
 
+=head1 FIELDS
+
+=head2 links
+
+Used internally by the formatter to keep track links in the document
+
+=head2 encoding
+
+Defines the character encoding for the current document.  Defaults to utf-8
+
+=head2 lang
+
+Define the language for the output file, defaults to en
+
+=cut
 
 1;
