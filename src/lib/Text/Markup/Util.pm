@@ -109,8 +109,6 @@ parameter and remove the parameter, flag from the argument array
 sub parse_param {
     my ($param, $accepts, $args_ref)=@_;
 
-    print "PARAM:$param:$accepts:$/";
-
     # look for the argument
     my ( $index )=grep {
         $args_ref->[$_] and

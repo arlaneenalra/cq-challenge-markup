@@ -78,8 +78,6 @@ my ($filename)=&parse_args(\@ARGV,{
         'accepts' => 1,
         'var' => \$formatter}});
 
-print "$no_links:$output:$formatter:$filename:$/";
-
 my $tokenizer=Text::Markup::Tokenizer->new(links => !$no_links);
 
 my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
