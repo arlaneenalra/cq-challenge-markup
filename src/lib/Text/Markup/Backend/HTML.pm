@@ -40,11 +40,11 @@ sub string {
     my $string='';
 
 
-    # # do we have a link definition rather than a normal tag?
-    # if($name eq 'link'
-    #    or $name eq 'link_def') {
-    #     return $self->process_link($tree);
-    # }
+    # do we have a link definition rather than a normal tag?
+    if($name eq 'link'
+       or $name eq 'link_def') {
+        return $self->process_link($tree);
+    }
 
     # render opening for current node
     $string.=$self->render_tag(1, $tree);
