@@ -16,7 +16,6 @@ use Text::Markup::Parser;
 use Text::Markup::Tokenizer;
 use Text::Markup::Util qw/slurp parse_args/;
 
-
 # Make sure that we are actually dealing with uft8
 binmode STDIN, ':encoding(utf8)';
 binmode STDOUT, ':encoding(utf8)';
@@ -70,7 +69,7 @@ my ($filename)=&parse_args(\@ARGV,{
     '--no-links' => {
         'accepts' => 0,
         'var' => \$no_links},
-
+	
     '-o' => {
         'accepts' => 1,
         'var' => \$output},
@@ -83,7 +82,6 @@ my $tokenizer=Text::Markup::Tokenizer->new(links => !$no_links);
 
 my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
 
-
 ## no critic (ProhibitStringyEval)
 
 # create an instance of the backend
@@ -93,7 +91,6 @@ eval "require $formatter;"
 ## use critic
 
 my $backend=$formatter->new();
-
 
 # Do we have a file on the command line or should we be 
 # looking for a stream?
