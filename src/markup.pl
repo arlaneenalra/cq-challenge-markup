@@ -10,11 +10,11 @@ use strict;
 use warnings;
 use diagnostics;
 
+use Carp;
+
 use Text::Markup::Parser;
 use Text::Markup::Tokenizer;
-use Text::Markup::Backend::XML;
-use Text::Markup::Util qw/slurp/;
-
+use Text::Markup::Util qw/slurp parse_args/;
 
 # Make sure that we are actually dealing with uft8
 binmode STDIN, ':encoding(utf8)';
@@ -25,29 +25,74 @@ binmode STDOUT, ':encoding(utf8)';
 markup.pl - Tool to convert text written using Text::Markup into a simple 
 xml document.
 
-=head1 SYNOPSIS
+=head1 USAGE
 
-markup.pl [--no-links] [filename] [-o outputfile]
+markup.pl [--no-links] [filename] [-o outputfile] [-f formatter]
 
 If no filename is provided, markup.pl will expect to receive input via stdin 
 and send output to stdout.
 
 =over
 
-cat test.txt | markup.pl
+% cat test.txt | markup.pl
 
 =back
 
+
+=head2 --no-links 
+    
+Turns of link processing for the given document.
+
+=head2 filename
+
+Input filename, if left blank the processor looks to stdin.
+
+=head2 -o outputfile
+
+The output file to write to.  If no file is provided, the script 
+outputs to stdout.
+
+=head2 -f formatter
+
+Output formatting module to be used.  This defaults to Text::Markup::Backend::XML 
+and should be provided as a fully qualified pacakge name.  The module in question
+must provide a method named string which accepts a Markup::Tree as its single 
+argument and returns a scalar containing rendered output.
+
 =cut
 
+# setup default values for arguments
+my ($no_links, $output, $formatter)=(0,'', 'Text::Markup::Backend::XML');
+
 # parse arguments into reasonable values
-my ($filename, $links, $output)=&parse_args(@ARGV);
+my ($filename)=&parse_args(\@ARGV,{
+    '--no-links' => {
+        'accepts' => 0,
+        'var' => \$no_links},
 
-my $tokenizer=Text::Markup::Tokenizer->new(links => $links);
+    '-o' => {
+        'accepts' => 1,
+        'var' => \$output},
 
+    '-f' => {
+        'accepts' => 1,
+        'var' => \$formatter}});
+
+print "$no_links:$output:$formatter:$filename:$/";
+
+my $tokenizer=Text::Markup::Tokenizer->new(links => !$no_links);
 
 my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
-my $backend=Text::Markup::Backend::XML->new();
+
+## no critic (ProhibitStringyEval)
+
+# create an instance of the backend
+eval "require $formatter;"
+    or croak "Unable to load $formatter due to $@";
+
+## use critic
+
+my $backend=$formatter->new();
 
 # Do we have a file on the command line or should we be 
 # looking for a stream?
@@ -56,69 +101,23 @@ my $source=$filename ? &slurp($filename) : &slurp(\*STDIN);
 # parse the source
 my $tree=$parser->parse($source);
 
+# render output using the selected backend
 my $string=$backend->string($tree);
 
 # write to a given file or STDOUT
 if($output) {
-    open OUTPUT, '>', $output
-        or die "Unable to open output file $@";
+    open my $fh_output, '>', $output
+        or croak "Unable to open output file $@";
     
-    binmode OUTPUT, ':encoding(utf8)';
+    binmode $fh_output, ':encoding(utf8)';
     
-    print OUTPUT $string;
+    print $fh_output $string;
 
-    close OUTPUT;
+    close $fh_output;
     
 } else {
     # use STDOUT
     print $string;
-}
-
-=head1 INTERNALS
-
-=head2 parse_args
-
-Convert the arguments array into a set of scalars we can use for 
-configuration choices.
-
-=cut
-sub parse_args {
-    my @args=@_;
-
-    my ($filename, $links, $output)=('', 1, '');
-   
-    
-    # if we have any arguments, parse them
-    if(@args) {
-        
-        # did they ask for no links?
-        ( $links )=grep { $args[$_] eq '--no-links' } 0..$#args;
-        
-        # clear the --no-links from the array
-        if(defined($links)) {
-            $args[$links]='';
-            $links=0;
-        }
-        
-        
-        # look for -o 
-        my ( $o_index )=grep { $args[$_] eq '-o' } 0..$#args;
-
-        # did we match?
-        if(defined($o_index)) {
-            $output=$args[$o_index+1];
-            
-            # clear -o filename from the array
-            $args[$o_index]='';
-            $args[$o_index+1]='';
-        }
-
-        # treat the first true value as an input file name
-        ($filename)=grep { $_ } @args;
-
-    }
-    
-    return ($filename, $links, $output);
 }
 
 
