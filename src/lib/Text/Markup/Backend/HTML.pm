@@ -7,7 +7,7 @@ use base 'Text::Markup::Base';
 
 use Carp;
 
-use fields qw/html links/;
+use fields qw/encoding links/;
 
 # # list of tags that are considered containers and need to have
 # # a $/ after the opening tag
@@ -75,12 +75,15 @@ Outputs the starting tags for an html document
 sub start_document {
     my ($self)=@_;
     
-    return '<!DOCTYPE HTML>
-<html>
-<head>
-</head>
-';
+    my $header="<!DOCTYPE html>$/";
+    
+    $header.='<head>';
+    
+    $header.='<meta charset="' . $self->encoding() . '" />';
+    $header.='</head>';
+    $header.='<html>';
 
+    return $header;
 }
 
 
@@ -219,6 +222,7 @@ sub default_values {
     
     return {
         links => {},
+        encoding => 'utf-8',
     };
 }
 
