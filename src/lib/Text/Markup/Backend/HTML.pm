@@ -36,34 +36,48 @@ Convert a given Text::Markup::Tree structure into html document defaults to HTML
 sub string {
     my ($self, $tree)=@_;
     
+    return join '', $self->string_internal($tree);
+}
+
+
+=head2 string_internal
+
+Does a first pass over the Text::Markup::Tree structure and setups up back references
+for certain kinds of nodes that will be futher processed latter.
+
+=cut
+
+sub string_internal {
+    my ($self, $tree)=@_;
+    
     my $name=$tree->name;
-    my $string='';
 
+    my @tags;
 
-    # do we have a link definition rather than a normal tag?
-    if($name eq 'link'
-       or $name eq 'link_def') {
-        return $self->process_link($tree);
-    }
+    # # do we have a link definition rather than a normal tag?
+    # if($name eq 'link'
+    #    or $name eq 'link_def') {
+    #     return $self->process_link($tree);
+    # }
 
     # render opening for current node
-    $string.=$self->render_tag(1, $tree);
+    push @tags, $self->render_tag(1, $tree);
 
     # walk all of the nodes in this nodes body
     foreach (@{$tree->body}) {
 
         if(ref $_) { # a complex tag
-            $string.=$self->string($_);
+            push @tags, $self->string($_);
 
         } else { # we have a tag with inline content
-            $string.=$self->encode_entities($_);
+            push @tags, $self->encode_entities($_);
         }
     }
 
     # render closing for current node
-    $string.=$self->render_tag(0, $tree);
+    push @tags, $self->render_tag(0, $tree);
 
-    return $string;
+    return @tags;
 }
 
 =head2 start_document
@@ -75,15 +89,15 @@ Outputs the starting tags for an html document
 sub start_document {
     my ($self)=@_;
     
-    my $header="<!DOCTYPE html>$/";
-    
-    $header.='<head>';
-    
-    $header.='<meta charset="' . $self->encoding() . '" />';
-    $header.='</head>';
-    $header.='<html lang="' . $self->lang() . '">';
-
-    return $header;
+    my @tags=(
+        '<!DOCTYPE html>',
+        '<head>',
+        '<meta charset="' . $self->encoding() . '" />',
+        '</head>',
+        '<html lang="' . $self->lang() . '">',
+        );
+        
+    return @tags;
 }
 
 
@@ -96,8 +110,7 @@ Output ending tag and footers for html tags
 sub end_document {
     my ($self)=@_;
     
-    return '</html>';
-
+    return ('</html>');
 }
 
 
@@ -112,18 +125,18 @@ sub render_tag {
     my ($self, $start_end, $tree)=@_;
 
     my $name=$tree->name();
-    my $tag='';
+    my @tags;
     my $call='';
 
     # do we have an html tag or do we have 
     # something else?
     if($html_tag{$name}) {
-        $tag.=$self->render_html_tag($start_end, $name);
+        push @tags, $self->render_html_tag($start_end, $name);
 
     } else {
 
         # treat inline tags as span and others as div
-        $tag.=$self->render_html_tag(
+        push @tags, $self->render_html_tag(
             $start_end, 
             $tree->inline() ? 'span':'div', 
             $name);
@@ -136,13 +149,13 @@ sub render_tag {
         # postion wrapping tags correctly for 
         # start or end
         if($start_end) {
-            $tag=$self->start_document() . $tag;
+            @tags=($self->start_document(), @tags);
         } else {
-            $tag.=$self->end_document();
+            push @tags, $self->end_document();
         }
     }
 
-    return $tag;
+    return @tags;
 }
 
 =head2 render_html_tag 
@@ -154,7 +167,18 @@ Generate an html start or end tag with the given class.
 sub render_html_tag {
     my ($self, $start_end, $name, $class)=@_;
 
-    $class=$class?" class=\"$class\"":'';
+    # if we have a value for class, 
+    # we need to properly encode it and
+    # add the attribute wrapper.
+
+    if($class) {
+        $class=' class="' 
+            . $self->encode_entities($class) 
+            . '"';
+        
+    } else {
+        $class='';
+    }
 
     if ($start_end) {
         return "<$name$class>";
@@ -163,37 +187,51 @@ sub render_html_tag {
     return "</$name>";
 }
 
-=head2 process_link
+# =head2 process_link
 
-Process links and link_def elements
+# Process links and link_def elements
 
-=cut
+# =cut
 
-sub process_link {
-    my ($self, $tree)=@_;
+# sub process_link {
+#     my ($self, $tree)=@_;
 
-    my $name=$tree->name;
-    my $string='';
+#     my $name=$tree->name;
     
-    # # handle a link
-    # if($name eq 'link') {
-    #     my $key='';
+#     # handle a link
+#     if($name eq 'link') {
+
+#         my @others;
+
+#         my ($key)=grep {
+#             my $test=(ref $_ and
+#                       $_->name eq 'key');
+
+#             # avoid looping twice
+#             if(!$test) {
+#                 push @others, $_;
+#             }
+
+#             $test;
+#         } @{$tree->body};
+
+#         # pull the key out 
+#         $tree->body=\@others;
         
-    #     # process each body node in
-    #     foreach (@{$tree->body}) {
-    #         # do we have a key tag inside this link's
-    #         # body?
-    #         if($_->name eq 'key') {
-    #             $key=$self->string($_);
-    #         }
-    #     }
-    # }
+#         # convert the key to a string.
+#         # if all is done right, there should be nothing
+#         # but string data in the key field.
+#         $key=join '', $self->string($key);
+
+#         # hmm . . . 
+
+#     }
 
     
-    #TODO : Add link processing code here.
+#     #TODO : Add link processing code here.
     
-    return '';
-}
+#     return '';
+# }
 
 =head2 _encode_entities
 
