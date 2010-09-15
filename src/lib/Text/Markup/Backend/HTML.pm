@@ -7,7 +7,7 @@ use base 'Text::Markup::Base';
 
 use Carp;
 
-use fields qw/encoding lang resources links/;
+use fields qw/encoding lang resources links stack/;
 
 # # list of tags that are considered containers and need to have
 # # a $/ after the opening tag
@@ -15,6 +15,13 @@ use fields qw/encoding lang resources links/;
 
 # list of tags we should call start_<tag> on 
 my %html_tag = map { $_ => 1 } qw/ol ul li blockquote p h1 h2 h3 h4 h5 h6 pre i b body/;
+
+# list of tags that require special processing
+my %special_tag=(
+    'link' => \&process_link,
+#    'key' => \&process_key,
+#    'link_def' => &process_link_def,
+    );
 
 
 =head1 NAME
@@ -35,8 +42,22 @@ Convert a given Text::Markup::Tree structure into html document defaults to HTML
 
 sub string {
     my ($self, $tree)=@_;
+
+    my $string='';
     
-    return join '', $self->string_internal($tree);
+    # convert the array of strings returned by string_internal into 
+    # a single string
+    foreach my $token ($self->string_internal($tree)) {
+
+        # if we have a code ref, execute it
+        if(ref $token eq 'CODE') {
+            $string.=$token->();
+        } else {
+            $string.=$token;
+        }
+    }
+    
+    return $string;
 }
 
 
@@ -54,14 +75,34 @@ sub string_internal {
 
     my @tags;
 
-    # # do we have a link definition rather than a normal tag?
-    # if($name eq 'link'
-    #    or $name eq 'link_def') {
-    #     return $self->process_link($tree);
-    # }
+    # do we have a special case tag?
+    if($special_tag{$name}) {
+        return $special_tag{$name}->($self, $tree);
+    }
 
     # render opening for current node
     push @tags, $self->render_tag(1, $tree);
+
+    # process the body of this node
+    push @tags, $self->process_tags($tree);
+
+    # render closing for current node
+    push @tags, $self->render_tag(0, $tree);
+
+    return @tags;
+}
+
+=head2 process_tags
+
+Takes the body of a node and converts it into an array
+or text and call backs.
+
+=cut
+
+sub process_tags {
+    my ($self, $tree)=@_;
+    
+    my @tags;
 
     # walk all of the nodes in this nodes body
     foreach (@{$tree->body}) {
@@ -73,10 +114,7 @@ sub string_internal {
             push @tags, $self->encode_entities($_);
         }
     }
-
-    # render closing for current node
-    push @tags, $self->render_tag(0, $tree);
-
+    
     return @tags;
 }
 
@@ -139,7 +177,7 @@ sub render_tag {
         push @tags, $self->render_html_tag(
             $start_end, 
             $tree->inline() ? 'span':'div', 
-            $name);
+            {'class' => $name});
     }
 
     # if we are processing the body tag, we need to deal with
@@ -165,73 +203,63 @@ Generate an html start or end tag with the given class.
 =cut
 
 sub render_html_tag {
-    my ($self, $start_end, $name, $class)=@_;
+    my ($self, $start_end, $name, $attributes_ref)=@_;
 
-    # if we have a value for class, 
-    # we need to properly encode it and
-    # add the attribute wrapper.
-
-    if($class) {
-        $class=' class="' 
-            . $self->encode_entities($class) 
-            . '"';
-        
-    } else {
-        $class='';
+    if(!$start_end) {
+        return "</$name>";
     }
 
-    if ($start_end) {
-        return "<$name$class>";
+    
+    my $attributes='';
+
+    # check for and process attributes
+    if($attributes_ref) {
+        # convert attibute hash into 
+        # a string of attributes
+        $attributes=' ' . join ' ', map {
+            $_ . '="' 
+                . $self->encode_entities($attributes_ref->{$_})
+                . '"';
+        } keys %{$attributes_ref};
     }
 
-    return "</$name>";
+    return '<' . $name . $attributes . '>';
 }
 
-# =head2 process_link
+=head2 process_link
 
-# Process links and link_def elements
+Process links elements
 
-# =cut
+=cut
 
-# sub process_link {
-#     my ($self, $tree)=@_;
+sub process_link {
+    my ($self, $tree)=@_;
 
-#     my $name=$tree->name;
+    my $name=$tree->name;
     
-#     # handle a link
-#     if($name eq 'link') {
+    # push a link node onto the processing stack
+    push @{$self->stack}, 'LINK';
 
-#         my @others;
-
-#         my ($key)=grep {
-#             my $test=(ref $_ and
-#                       $_->name eq 'key');
-
-#             # avoid looping twice
-#             if(!$test) {
-#                 push @others, $_;
-#             }
-
-#             $test;
-#         } @{$tree->body};
-
-#         # pull the key out 
-#         $tree->body=\@others;
-        
-#         # convert the key to a string.
-#         # if all is done right, there should be nothing
-#         # but string data in the key field.
-#         $key=join '', $self->string($key);
-
-#         # hmm . . . 
-
-#     }
-
+    # process the body of the node into tags
+    my @tags=$self->process_tags($tree);
     
-#     #TODO : Add link processing code here.
+    # get rid of our flagging token
+    pop @{$self->stack};
+
+    my $key='key';
     
-#     return '';
-# }
+    my $link_start=sub {
+        return $self->render_html_tag(1, 'a', {'href' => $key});
+    };
+    
+    # build the link start call
+    my $link_end=sub {
+        return $self->render_html_tag(0, 'a');
+    };
+
+    # return with link start and end references added in
+    return ($link_start, @tags, $link_end);
+}
 
 =head2 _encode_entities
 
@@ -262,7 +290,7 @@ sub default_values {
         links => {},
         encoding => 'utf-8',
         lang => 'en',
-        #resources => [],
+        stack => [],
     };
 }
 
@@ -271,6 +299,10 @@ sub default_values {
 =head2 links
 
 Used internally by the formatter to keep track links in the document
+
+=head2 stack
+
+Used internally by the formatter to return data from nested nodes
 
 =head2 encoding
 
