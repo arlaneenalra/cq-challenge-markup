@@ -53,9 +53,6 @@ sub string {
         }
     }
 
-    use Data::Dumper;
-    carp &Dumper($self);
-    
     return $string;
 }
 
@@ -94,12 +91,13 @@ sub string_internal {
 =head2 process_tags
 
 Takes the body of a node and converts it into an array
-or text and call backs.
+or text and call backs.  Accepts a tree node and optionally
+a flag indicating if formatting tags should be stripped.
 
 =cut
 
 sub process_tags {
-    my ($self, $tree)=@_;
+    my ($self, $tree, $strip)=@_;
     
     my @tags;
 
@@ -107,7 +105,14 @@ sub process_tags {
     foreach (@{$tree->body}) {
 
         if(ref $_) { # a complex tag
-            push @tags, $self->string_internal($_);
+            
+            # if strip is set to true, only process the tags
+            # contents
+            if($strip) {
+                push @tags, $self->process_tags($_, 1);
+            } else {
+                push @tags, $self->string_internal($_);
+            }
 
         } else { # we have a tag with inline content
             push @tags, $self->encode_entities($_);
@@ -239,8 +244,8 @@ sub process_link_def {
     my ($key_ref, $url_ref)=@{$tree->body};
 
     # assumed to always have a pure text body
-    my $key=$self->make_link_key($key_ref->body);
-    my $url=join '', @{$url_ref->body};
+    my $key=$self->make_link_key($key_ref);
+    my $url=join '', $self->process_tags($url_ref,1);
 
     # put this link definition into the link lookup hash
     $self->links->{$key}=$url;
@@ -260,7 +265,7 @@ sub process_key {
     my ($self, $tree)=@_;
 
     # key nodes are assumed to have a pure text body.
-    my $key=$self->make_link_key($tree->body);
+    my $key=$self->make_link_key($tree);
 
     # add the key node to our link hash, 
     # a link_def will latter look it up and attach a value to it.
@@ -290,8 +295,7 @@ sub process_link {
     push @{$self->stack}, ['LINK', ''];
 
     # process the body of the node into tags
-    my @tags=$self->process_tags($tree);
-    
+    my @tags=$self->process_tags($tree);    
 
     # get rid of our flagging token
     my $ref = pop @{$self->stack};
@@ -306,7 +310,7 @@ sub process_link {
         
         # treat all of the tags we found as the key.  
         # this is crude but should work for most cases.
-        $key=$self->make_link_key(\@tags);
+        $key=$self->make_link_key($tree);
     }
     
     # create the link starting point callback
@@ -340,9 +344,10 @@ links in a case insensitive manner.
 =cut
 
 sub make_link_key {
-    my ($self, $key_tokens)=@_;
+    my ($self, $tree)=@_;
         
-    my $key=join '', @{$key_tokens};
+    # build a pure text version of this nodes body
+    my $key=join '', $self->process_tags($tree, 1);
     
     $key=~tr/A-Z/a-z/;
     
