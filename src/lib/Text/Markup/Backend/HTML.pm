@@ -19,7 +19,7 @@ my %html_tag = map { $_ => 1 } qw/ol ul li blockquote p h1 h2 h3 h4 h5 h6 pre i 
 # list of tags that require special processing
 my %special_tag=(
     'link' => \&process_link,
-#    'key' => \&process_key,
+    'key' => \&process_key,
 #    'link_def' => &process_link_def,
     );
 
@@ -226,9 +226,31 @@ sub render_html_tag {
     return '<' . $name . $attributes . '>';
 }
 
+=head2 process_key
+
+Process a key token by placing the contents of a key node into the links
+hash for latter retrieval by a link callback
+
+=cut
+
+sub process_key {
+    my ($self, $tree)=@_;
+
+    # key nodes are assumed to have a pure text body.
+    my $key=join '', @{$tree->body};
+
+    # add the key node to our link hash, 
+    # a link_def will latter look it up and attach a value to it.
+    $self->links->{$key}='';
+    
+    # key's will neve have any contents to return
+    return ();
+}
+
 =head2 process_link
 
-Process links elements
+Process links elements by adding a callback to the output token stream.  This
+allows for links to be processed after the token stream is assembled.
 
 =cut
 
@@ -238,27 +260,49 @@ sub process_link {
     my $name=$tree->name;
     
     # push a link node onto the processing stack
-    push @{$self->stack}, 'LINK';
+    push @{$self->stack}, ['LINK', ''];
 
     # process the body of the node into tags
     my @tags=$self->process_tags($tree);
     
+
     # get rid of our flagging token
-    pop @{$self->stack};
+    my $ref = pop @{$self->stack};
+    my $key;
 
-    my $key='key';
+    # Did we find a key tag somewhere in there?
+    if($ref->[0] eq 'KEY') {
+        
+        # key is in the second element of our tupple
+        $key=$ref->[1];
+    } else {
+        
+        # treat all of the tags we found as the key.  
+        # this is crude but should work for most cases.
+        $key=join '', @tags;
+    }
     
+    # create the link starting point callback
     my $link_start=sub {
-        return $self->render_html_tag(1, 'a', {'href' => $key});
+        
+        # lookup our target url
+        my $target=$self->links->{$key};
+        
+        if(!$target) {
+            carp "Link with key value '$key' is missing a target!";
+        }
+        
+        return $self->render_html_tag(1, 'a', {'href' => $target});
     };
     
-    # build the link start call
-    my $link_end=sub {
-        return $self->render_html_tag(0, 'a');
-    };
+    # add the link start callback and ending tag
+    @tags= (
+        $link_start, 
+        @tags, 
+        $self->render_html_tag(0, 'a')
+        );
 
-    # return with link start and end references added in
-    return ($link_start, @tags, $link_end);
+    return @tags;
 }
 
 =head2 _encode_entities
@@ -270,6 +314,9 @@ characters.
 
 sub encode_entities {
     my ($self, $content)=@_;
+
+    # avoid undef warning when content is undef
+    $content=defined($content)?$content:'';
 
     $content=~s/&/&amp;/g; # has to be done first
     $content=~s/</&lt;/g;
