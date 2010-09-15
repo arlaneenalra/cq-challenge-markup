@@ -9,10 +9,6 @@ use Carp;
 
 use fields qw/encoding lang resources links stack/;
 
-# # list of tags that are considered containers and need to have
-# # a $/ after the opening tag
-# my %container = map { $_ => 1 } qw/blockquote ol ul li note p/;
-
 # list of tags we should call start_<tag> on 
 my %html_tag = map { $_ => 1 } qw/ol ul li blockquote p h1 h2 h3 h4 h5 h6 pre i b body/;
 
@@ -20,7 +16,7 @@ my %html_tag = map { $_ => 1 } qw/ol ul li blockquote p h1 h2 h3 h4 h5 h6 pre i 
 my %special_tag=(
     'link' => \&process_link,
     'key' => \&process_key,
-#    'link_def' => &process_link_def,
+    'link_def' => \&process_link_def,
     );
 
 
@@ -56,6 +52,9 @@ sub string {
             $string.=$token;
         }
     }
+
+    use Data::Dumper;
+    carp &Dumper($self);
     
     return $string;
 }
@@ -108,7 +107,7 @@ sub process_tags {
     foreach (@{$tree->body}) {
 
         if(ref $_) { # a complex tag
-            push @tags, $self->string($_);
+            push @tags, $self->string_internal($_);
 
         } else { # we have a tag with inline content
             push @tags, $self->encode_entities($_);
@@ -226,6 +225,30 @@ sub render_html_tag {
     return '<' . $name . $attributes . '>';
 }
 
+=head2 process_link_def
+
+Process link_def nodes to provide link node callbacks with values.
+
+=cut
+
+sub process_link_def {
+    my ($self, $tree)=@_;
+    
+    # link_def elements should always have a link and url node
+    # and only a link and url node.  Nothing else makes sense
+    my ($key_ref, $url_ref)=@{$tree->body};
+
+    # assumed to always have a pure text body
+    my $key=$self->make_link_key($key_ref->body);
+    my $url=join '', @{$url_ref->body};
+
+    # put this link definition into the link lookup hash
+    $self->links->{$key}=$url;
+
+    # link_def nodes never render content
+    return ();
+}
+
 =head2 process_key
 
 Process a key token by placing the contents of a key node into the links
@@ -237,11 +260,15 @@ sub process_key {
     my ($self, $tree)=@_;
 
     # key nodes are assumed to have a pure text body.
-    my $key=join '', @{$tree->body};
+    my $key=$self->make_link_key($tree->body);
 
     # add the key node to our link hash, 
     # a link_def will latter look it up and attach a value to it.
     $self->links->{$key}='';
+
+    # replace the last LINK tag that is supposed to
+    # be on the stack with the key value we just found
+    $self->stack->[-1]=['KEY', $key];
     
     # key's will neve have any contents to return
     return ();
@@ -279,7 +306,7 @@ sub process_link {
         
         # treat all of the tags we found as the key.  
         # this is crude but should work for most cases.
-        $key=join '', @tags;
+        $key=$self->make_link_key(\@tags);
     }
     
     # create the link starting point callback
@@ -303,6 +330,23 @@ sub process_link {
         );
 
     return @tags;
+}
+
+=head2 make_link_key
+
+Converts an array of string values into a scalar key value for looking up 
+links in a case insensitive manner.
+
+=cut
+
+sub make_link_key {
+    my ($self, $key_tokens)=@_;
+        
+    my $key=join '', @{$key_tokens};
+    
+    $key=~tr/A-Z/a-z/;
+    
+    return $key;
 }
 
 =head2 _encode_entities
