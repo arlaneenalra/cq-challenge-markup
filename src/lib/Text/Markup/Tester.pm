@@ -12,9 +12,15 @@ our @EXPORT=qw/run_test/;
 use Text::Markup::Parser;
 use Text::Markup::Tokenizer;
 use Text::Markup::Backend::XML;
+use Text::Markup::Backend::HTML;
 use Text::Markup::Util qw/slurp/;
 
 use Test::Simple tests => 1;
+
+my %ext_map=(
+'xml' => 'Text::Markup::Backend::XML',
+'html' => 'Text::Markup::Backend::HTML',
+);
 
 =head1 NAME
 
@@ -35,7 +41,7 @@ run_test($path_to_data_files, $0);
 
 =head2 run_test
 
-Takes a path to the test data files and a name for the test file.  
+Takes a path to the test data files and a name for the test file.
 
 =cut
 
@@ -49,26 +55,39 @@ sub run_test {
     $path.="/$test";
 
 
-    # construct a new instance of everything to make sure 
-    # various portions of the tests do not interactive with 
+    # construct a new instance of everything to make sure
+    # various portions of the tests do not interactive with
     # each other in negative or positive manners
     my $tokenizer=Text::Markup::Tokenizer->new();
     my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
-    my $backend=Text::Markup::Backend::XML->new();
 
-    my $xml=&slurp("$path.xml");
     my $source=&slurp("$path.txt");
 
     # parse the source tree
     my $tree=$parser->parse($source);
 
-    # call our back end handler to convert 
-    # to the simple xml format
-    my $output=$backend->string($tree);
-
-    # a naive approach to checking output
-    ok($output eq $xml, "$test - Chcking Output");
+    foreach my $ext (keys %ext_map) {
+      my $file=$path . '.' . $ext;
+      if(-e $file) {
+        run_ext_test($tree, $file, $ext_map{$ext});
+      }
+    }
 }
+
+
+sub run_ext_test {
+  my ($tree, $expected_file, $formater)=@_;
+
+  my $backend=$formater->new();
+
+  my $expected=slurp($expected_file);
+
+  my $output=$backend->string($tree);
+
+  # a naive approach to checking output
+  ok($output eq $expected, "$expected_file - Chcking Output");
+}
+
 
 
 1;
