@@ -27,7 +27,7 @@ xml document.
 
 =head1 USAGE
 
-markup.pl [--no-links] [filename] [-o outputfile] [-f formatter]
+markup.pl [--no-links] [-o outputfile] [-f formatter] [filename] ...
 
 If no filename is provided, markup.pl will expect to receive input via stdin
 and send output to stdout.
@@ -65,47 +65,73 @@ argument and returns a scalar containing rendered output.
 my ($no_links, $output, $formatter)=(0,'', 'Text::Markup::Backend::XML');
 
 # parse arguments into reasonable values
-my ($filename)=parse_args(\@ARGV,{
-    '--no-links' => {
-        'accepts' => 0,
-        'var' => \$no_links},
+my (@filenames)=parse_args(\@ARGV,{
+                                   '--no-links' => {
+                                                    'accepts' => 0,
+                                                    'var' => \$no_links},
 
-    '-o' => {
-        'accepts' => 1,
-        'var' => \$output},
+                                   '-o' => {
+                                            'accepts' => 1,
+                                            'var' => \$output},
 
-    '-f' => {
-        'accepts' => 1,
-        'var' => \$formatter}});
-
-my $tokenizer=Text::Markup::Tokenizer->new(links => !$no_links);
-
-my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
+                                   '-f' => {
+                                            'accepts' => 1,
+                                            'var' => \$formatter}});
 
 ## no critic (ProhibitStringyEval)
 
 # create an instance of the backend
 eval "require $formatter;"
-    or croak "Unable to load $formatter due to $@";
-
-## use critic
+  or croak "Unable to load $formatter due to $@";
 
 my $backend=$formatter->new();
 
-# Do we have a file on the command line or should we be
-# looking for a stream?
-my $source=$filename ? slurp($filename) : slurp(\*STDIN);
+## use critic
 
-# parse the source
-my $tree=$parser->parse($source);
+if(@filenames <= 1) { # process a single file or STDIN
+  my $file=$filenames[0];
 
-# render output using the selected backend
-my $string=$backend->string($tree);
+  my $source=$file ? slurp($file) : slurp(\*STDIN);
 
-# write to a given file or STDOUT
-if($output) {
+  my $string=format_file($source, $backend);
+
+  output_file($string, $output);
+
+} else { # process multiple files
+
+  if($output) {
+    die "-o may not be used with multiple files";
+  }
+
+  # walk each file and output it 
+  foreach my $filename (@filenames) {
+    my $source=slurp($filename);
+
+    # strip file extension
+    my $output=$filename;
+    $output=~s/\.[^.]*$//;
+    $output=$output . '.' . $backend->extension();
+
+    my $string=format_file($source, $backend);
+    output_file($string, $output);
+  }
+}
+
+# # Do we have a file on the command line or should we be
+# # looking for a stream?
+# my $source=$filename ? slurp($filename) : slurp(\*STDIN);
+
+# my $string=format_file($source, $formatter);
+
+# write processed results out to a file
+sub output_file {
+  my ($string, $output)=@_;
+
+  # write to a given file or STDOUT
+  if ($output) {
+
     open my $fh_output, '>', $output
-        or croak "Unable to open output file $@";
+      or croak "Unable to open output file $@";
 
     binmode $fh_output, ':encoding(utf8)';
 
@@ -113,9 +139,24 @@ if($output) {
 
     close $fh_output;
 
-} else {
+  } else {
     # use STDOUT
     print $string;
+  }
 }
 
+# process a single file
+sub format_file {
+  my ($source, $backend)=@_;
+
+  my $tokenizer=Text::Markup::Tokenizer->new(links => !$no_links);
+  my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
+
+  # parse the source
+  my $tree=$parser->parse($source);
+
+  # render output using the selected backend
+  return $backend->string($tree);
+
+}
 
