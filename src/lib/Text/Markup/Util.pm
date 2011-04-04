@@ -83,7 +83,7 @@ sub parse_args {
     foreach my $param ( keys %{$param_ref}) {
         my ($accepts, $var_ref)=@{$param_ref->{$param}}{'accepts', 'var'};
 
-        my $value=&parse_param($param, $accepts, $args_ref);
+        my $value=parse_param($param, $accepts, $args_ref);
 
         # only assign to our variable reference if
         # we actually found something.

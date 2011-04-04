@@ -61,7 +61,7 @@ sub run_test {
     my $tokenizer=Text::Markup::Tokenizer->new();
     my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
 
-    my $source=&slurp("$path.txt");
+    my $source=slurp("$path.txt");
 
     # parse the source tree
     my $tree=$parser->parse($source);

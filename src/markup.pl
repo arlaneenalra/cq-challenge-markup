@@ -65,7 +65,7 @@ argument and returns a scalar containing rendered output.
 my ($no_links, $output, $formatter)=(0,'', 'Text::Markup::Backend::XML');
 
 # parse arguments into reasonable values
-my ($filename)=&parse_args(\@ARGV,{
+my ($filename)=parse_args(\@ARGV,{
     '--no-links' => {
         'accepts' => 0,
         'var' => \$no_links},
@@ -94,7 +94,7 @@ my $backend=$formatter->new();
 
 # Do we have a file on the command line or should we be 
 # looking for a stream?
-my $source=$filename ? &slurp($filename) : &slurp(\*STDIN);
+my $source=$filename ? slurp($filename) : slurp(\*STDIN);
 
 # parse the source
 my $tree=$parser->parse($source);
