@@ -29,7 +29,7 @@ Append text to the end of the node we are currently working on.
 
 sub append_text {
     my ($self, $text)=@_;
-    
+
     if($text ne '') {
         push @{$self->text}, $text;
     }
@@ -52,14 +52,14 @@ sub append_node {
         push @{$self->body}, $node;
 
     } else {
-        
+
         # do we have an inline or verbatim node?
         if($self->inline
             or $self->verbatim) {
             $self->body = $self->text;
 
         } else {
-            
+
             # only add a new node if there is some content
             # to put in the node, avoid empty <p/> tags
             if(@{$self->text}) {
@@ -70,7 +70,7 @@ sub append_node {
             }
         }
     }
-    
+
 
     # put us back into the default parsing state
     $self->reset(qw/node text/);
@@ -96,7 +96,7 @@ sub default_values {
 }
 
 =head1 FIELDS
-    
+
 Meanings and uses for some of the public accessible fields.
 
 =head2 name 

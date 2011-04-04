@@ -30,11 +30,11 @@ given default values to remaining parameters.
 
 sub new {
     my ($self, @args)=@_;
-    
+
     # Setup the fields hash
     $self=fields::new($self)
         unless ref $self;
-    
+
     # Convert our arguments to a hash
     my %args=@args;
 
@@ -63,19 +63,19 @@ sub new {
             $self->{$_}=$default_values{$_};
         }
     }
-    
+
     return $self;
 }
 
 
 =head2 reset
-    
+
 Resets the list of field names passed in to their default values
 
 =cut
 sub reset {
     my ($self, @fields)=@_;
-    
+
     my %default_values=%{$self->default_values};
 
     foreach (@fields) {
@@ -121,7 +121,7 @@ sub AUTOLOAD : lvalue {
     # Extract the function name
     my $name=$AUTOLOAD;
     $name=~s/^.*:://;
-    
+
     # turn off strict so we can 
     {
         no strict 'refs';

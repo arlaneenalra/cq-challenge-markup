@@ -42,9 +42,9 @@ sub slurp {
 
     open my $fh, '<', $file
         or croak "Unable to open file $file due to: $!";
-    
+
     binmode $fh, ":encoding(utf8)"; # set utf8 encoding
-    
+
     # load the entire file into memory
     my $content=<$fh>;
 
@@ -92,10 +92,10 @@ sub parse_args {
         }
 
     }
-    
+
     # prune all undefined values from the argument list
     my @unmatched=grep { defined($_) } @{$args_ref};
-    
+
     return @unmatched;
 }
 
@@ -125,17 +125,17 @@ sub parse_param {
 
             return 1;
         }
-        
+
     } elsif(defined($index)) {
         my $value=$args_ref->[$index+1];
-        
+
         # clear -o filename from the array
         $args_ref->[$index]=undef;
         $args_ref->[$index+1]=undef;
 
         return $value;
     }
-    
+
     # no match found
     return;
 }

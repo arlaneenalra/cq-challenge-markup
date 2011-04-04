@@ -31,13 +31,13 @@ Convert the passed in Text::Markup::Tree structure into a xml string.
 
 sub string {
     my ($self, $tree, $indent_val)=@_;
-    
+
     my $name=$tree->name;
     my $string='';
 
     # make sure that $extra_indent is a number
     $indent_val=defined($indent_val)?$indent_val:0;
-    
+
     # we need to add an extra newline for subdocuments
     if($tree->subdocument) {
         $string.=$/;
@@ -55,7 +55,7 @@ sub string {
 
     # if we have no internals, start with an empty body
     $string.=((@{$tree->body})?"<$name>":"<$name/>");
-    
+
     # put a $/ after opening container tags
     if($container{$name}) {
         $string.=$/;
@@ -64,7 +64,7 @@ sub string {
 
     # walk all of the nodes in this nodes body
     foreach (@{$tree->body}) {
-        
+
         if(ref $_) { # a complex tag
             $string.=$self->string($_, $indent_val+1);
 
@@ -72,7 +72,7 @@ sub string {
             $string.=$self->_encode_entities($_);
         }
     }
-    
+
     # did we have an empty body tag?
     if($container{$name}) {
         $string.=$indent;
@@ -86,7 +86,7 @@ sub string {
         or (!@{$tree->body} and $container{$name})) {
         $string.=$/;
     }
-    
+
     # properly indent the next line
     if($tree->subdocument) {
         $string.=$indent;
@@ -109,7 +109,7 @@ sub _encode_entities {
     $content=~s/&/&amp;/g; # has to be done first
     $content=~s/</&lt;/g;
     $content=~s/>/&gt;/g;
-    
+
     return $content;
 }
 

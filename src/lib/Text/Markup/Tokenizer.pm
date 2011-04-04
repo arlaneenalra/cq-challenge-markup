@@ -24,11 +24,11 @@ my @token_patterns=(
     [qr/\]/ => 'LINK_BLOCK_END'], # Match the end of a link block
     [qr/ *</ => 'LINK_DEF_START'], # Match the end of a link block
     [qr/>/ => 'LINK_DEF_END'], # Match the end of a link block
-    
+
     [qr/- / => 'UNORDERED_LIST'], # Matches an unordered list
 
     [qr/# / => 'ORDERED_LIST'], # Matches an ordered list
-    
+
     [qr{$/\s*(?:$/)+} => 'END_OF_PARAGRAPH'], # Matches an end of paragraph marker
     [qr{$/} => 'END_OF_LINE'], # Matches an end of line marker
     );
@@ -48,7 +48,7 @@ my %token_rules=(
     'END_OF_PARAGRAPH' => [qw/+ANY+ +DELETE+/],
     'END_OF_LINE' => [qw/+ANY+ +DELETE+/],
     'EMACS_MODE' => [qw/+ANY+ +DELETE+/],
-    
+
     'LINK_DEF_START' => [qw/LINK_BLOCK_END/],
     );
 
@@ -85,26 +85,26 @@ which can then be used to provide structure to our content.
 
 sub tokenize {
     my ($self, $content)=@_;
-    
+
     # Loop until there is not more content to match
     my @tokens;
     my $last_token=undef;
 
     while($content) {
-        
+
         # Retrieve a token and add it to our
         # list of tokens
         my ($token, $txt)=$self->next_token($content);
 
         my $delete='';
         my $match=1;
-        
+
         # strip matched text from the front of our content
         $content=substr $content, length $txt;
 
         # check for special case tokens
         if($token_rules{$token}) {
-            
+
             # look for any matching rules
             $match=grep { 
 
@@ -120,10 +120,10 @@ sub tokenize {
             $delete=grep {
                 $_ eq '+DELETE+'
             } @{$token_rules{$token}};
-            
+
             # we only do the delete if we didn't match
             $delete=($delete and !$match);
-            
+
             unless($match) {
                 # convert special case tokens to plain text
                 $token='';
@@ -153,7 +153,7 @@ sub next_token {
 
     # Pick which set of rules we are working from
     my @patterns=$self->links ? @token_patterns : @token_patterns_no_links;
-    
+
     # Walk each pattern until we find one that matches
     foreach (@patterns) {
         my ($regex,$token)=@$_;
@@ -173,7 +173,7 @@ sub next_token {
         # does this regex match anywhere in the data?
         if($content=~m/(\A.*?)$regex/) {
             my $prematch=$1;
-            
+
             # we want the shortest possible prematch
             if(!$matched or
                ($prematch and (length $matched > length $prematch))) {

@@ -75,7 +75,7 @@ Accepts a scalar containing text and parses it into an internal parser tree.
 
 sub parse {
     my ($self, $content)=@_;
-   
+
     # Normalize on a standard eol
     $content=$self->normalize($content);
 
@@ -103,7 +103,7 @@ sub _parse_internal {
 
 
     my $not_done=1; # set to true if we need to return to a parent
-    
+
     # handle various tokens
     while(@$tokens and $not_done) {
         my ($token, $txt)=@{$tokens->[0]};
@@ -127,7 +127,7 @@ sub _parse_internal {
 
             $context->append_text($txt);
         }
-        
+
         # move to the next token unless we are already there
         unless($no_shift) {
             shift @$tokens;
@@ -177,7 +177,7 @@ sub _parse_tag_end {
     if(@{$context->text}) {
         $context->append_node();
     }
-    
+
     return ('','');
 }
 
@@ -218,7 +218,7 @@ sub _parse_eol {
             # we have already shifted once
             $no_shift=1;
         }
-        
+
     } else {
         # if we are the last token, close out whatever 
         # node we were working on
@@ -246,10 +246,10 @@ sub _parse_list {
 
     # Are we already processing a list of this type ?
     if($context->name eq $list_type) {
-        
+
         # process the list tag and start a new list item
         shift @{$tokens};
-        
+
         $context->append_node(
             $self->_parse_internal(
                 Text::Markup::Tree->new(
@@ -292,7 +292,7 @@ sub _parse_escape {
 
         return (1, '');
     }
-    
+
     # pop the next two tokens
     shift @$tokens;
     shift @$tokens;
@@ -324,7 +324,7 @@ sub _parse_link_start {
     my ($token, $txt)=@{$tokens->[0]};
 
     my $marker=($token eq 'LINK_BLOCK_START') ? 'link' : 'url';
-    
+
 
     $self->_convert_to_tag($tokens, $marker);
 
@@ -354,7 +354,7 @@ sub _parse_link_middle {
 
     return (1, 1);
 }
-    
+
 
 =head2 _convert_to_tag
 
@@ -391,7 +391,7 @@ sub _parse_link_end {
 
     # are we ending a LINK_BLOCK with a key?
     if($context->name eq 'key') {
-        
+
         # drop out of the key and reprocess in the next
         # layer up
         unshift @$tokens, ['', ''];
@@ -422,7 +422,7 @@ into a link_def or if this token should be converted to a text token
 
 sub _parse_link_def_end {
     my ($self, $context, $tokens)=@_;
-    
+
     my ($token, $txt)=@{$tokens->[0]};
     my $not_done=1;
 
@@ -434,11 +434,11 @@ sub _parse_link_def_end {
     # a link_def element
     if(@$tokens>1) {
         my ($next_token, $next_txt)=@{$tokens->[1]};
-        
+
         $real_link_def=($next_token eq 'END_OF_LINE'
                         or $next_token eq 'END_OF_PARAGRAPH');
     }
-    
+
     # if we have a real link, replace the paragraph we are in
     # with a link_def using a REMARK_LINK_DEF token
 
@@ -474,7 +474,7 @@ sub _parse_verbatim {
 
 
     my $not_done=1; # set to true if we need to return to a parent
-    
+
     # handle various tokens
     while(@$tokens and $not_done) {
         my ($token, $txt)=@{$tokens->[0]};
@@ -485,7 +485,7 @@ sub _parse_verbatim {
 
         if($token eq 'INDENT') { # Handle a block quote
             ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-            
+
         } elsif($token eq 'END_OF_LINE'
             or $token eq 'END_OF_PARAGRAPH') {
 
@@ -495,7 +495,7 @@ sub _parse_verbatim {
 
                 # parse the next object and see if we have a decrease in indentation
                 ($not_done, $no_shift)=$self->_parse_indent($context, $tokens);
-                
+
                 # a not done here means we are at the same indentation
                 # level
                 if($not_done) {
@@ -507,12 +507,12 @@ sub _parse_verbatim {
 
             $context->append_text($txt);
         }
-        
+
         unless($no_shift) {
             shift @$tokens;
         }
     }
-    
+
     $context->append_node();
 
     return $context;
@@ -574,7 +574,7 @@ sub _parse_indent {
         } elsif($diff >= 3) {
             # replace the current token with a text token
             @{$tokens->[0]}=('',' ' x ($diff-3));
-            
+
             # verbatim
                 $context->append_node(
                     $self->_parse_verbatim(
@@ -586,14 +586,14 @@ sub _parse_indent {
             return (1,1);
         }
     } else { # moving back up an indention level
-        
+
         # no_shift won't propgate to parent scope
         # so we do this to avoid getting shifted
 
         # lists need to dedent twice
         if($context->name eq 'li'
             and $diff < -2) {
-            
+
             unshift @$tokens, ['DEDENT',$txt];
             unshift @$tokens, ['DEDENT',$txt];
         }
@@ -613,19 +613,19 @@ Parses a chain of header '*' characters to into a header
 
 sub _parse_header {
     my ($self, $context, $tokens)=@_;
-    
+
     my ($token, $txt)=@{$tokens->[0]};
 
     my $depth=split '\*', $txt; # track header depth
     $depth--; # headers have one space following them.
 
     $context->node="h$depth";
-    
+
     return (1,'');
 }
 
 =head2 required_args
-    
+
 Returns an array of required constructor arugments.
 
 =cut
@@ -642,13 +642,13 @@ Converts end of line characters and tabs into a values expected buy the tokenize
 
 sub normalize {
     my ($self, $content)=@_;
-    
+
     # match all four of the common eol markers
     $content=~s/\n|\r\n|\n\r|\r/$\//g;
 
     # Convert tabs into spaces
     $content=~s/\t/        /g;
-    
+
     return $content;
 }
 

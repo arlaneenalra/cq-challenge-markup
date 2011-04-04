@@ -40,7 +40,7 @@ sub string {
     my ($self, $tree)=@_;
 
     my $string='';
-    
+
     # convert the array of strings returned by string_internal into 
     # a single string
     foreach my $token ($self->string_internal($tree)) {
@@ -66,7 +66,7 @@ for certain kinds of nodes that will be futher processed latter.
 
 sub string_internal {
     my ($self, $tree)=@_;
-    
+
     my $name=$tree->name;
 
     my @tags;
@@ -98,14 +98,14 @@ a flag indicating if formatting tags should be stripped.
 
 sub process_tags {
     my ($self, $tree, $strip)=@_;
-    
+
     my @tags;
 
     # walk all of the nodes in this nodes body
     foreach (@{$tree->body}) {
 
         if(ref $_) { # a complex tag
-            
+
             # if strip is set to true, only process the tags
             # contents
             if($strip) {
@@ -118,7 +118,7 @@ sub process_tags {
             push @tags, $self->encode_entities($_);
         }
     }
-    
+
     return @tags;
 }
 
@@ -130,7 +130,7 @@ Outputs the starting tags for an html document
 
 sub start_document {
     my ($self)=@_;
-    
+
     my @tags=(
         '<!DOCTYPE html>',
         '<head>',
@@ -138,7 +138,7 @@ sub start_document {
         '</head>',
         '<html lang="' . $self->lang() . '">',
         );
-        
+
     return @tags;
 }
 
@@ -151,7 +151,7 @@ Output ending tag and footers for html tags
 
 sub end_document {
     my ($self)=@_;
-    
+
     return ('</html>');
 }
 
@@ -187,7 +187,7 @@ sub render_tag {
     # if we are processing the body tag, we need to deal with
     # document level stuff
     if($name eq 'body') {
-        
+
         # postion wrapping tags correctly for 
         # start or end
         if($start_end) {
@@ -213,7 +213,7 @@ sub render_html_tag {
         return "</$name>";
     }
 
-    
+
     my $attributes='';
 
     # check for and process attributes
@@ -238,7 +238,7 @@ Process link_def nodes to provide link node callbacks with values.
 
 sub process_link_def {
     my ($self, $tree)=@_;
-    
+
     # link_def elements should always have a link and url node
     # and only a link and url node.  Nothing else makes sense
     my ($key_ref, $url_ref)=@{$tree->body};
@@ -274,7 +274,7 @@ sub process_key {
     # replace the last LINK tag that is supposed to
     # be on the stack with the key value we just found
     $self->stack->[-1]=['KEY', $key];
-    
+
     # key's will neve have any contents to return
     return ();
 }
@@ -290,7 +290,7 @@ sub process_link {
     my ($self, $tree)=@_;
 
     my $name=$tree->name;
-    
+
     # push a link node onto the processing stack
     push @{$self->stack}, ['LINK', ''];
 
@@ -303,29 +303,29 @@ sub process_link {
 
     # Did we find a key tag somewhere in there?
     if($ref->[0] eq 'KEY') {
-        
+
         # key is in the second element of our tupple
         $key=$ref->[1];
     } else {
-        
+
         # treat all of the tags we found as the key.  
         # this is crude but should work for most cases.
         $key=$self->make_link_key($tree);
     }
-    
+
     # create the link starting point callback
     my $link_start=sub {
-        
+
         # lookup our target url
         my $target=$self->links->{$key};
-        
+
         if(!$target) {
             carp "Link with key value '$key' is missing a target!";
         }
-        
+
         return $self->render_html_tag(1, 'a', {'href' => $target});
     };
-    
+
     # add the link start callback and ending tag
     @tags= (
         $link_start, 
@@ -345,12 +345,12 @@ links in a case insensitive manner.
 
 sub make_link_key {
     my ($self, $tree)=@_;
-        
+
     # build a pure text version of this nodes body
     my $key=join '', $self->process_tags($tree, 1);
-    
+
     $key=~tr/A-Z/a-z/;
-    
+
     return $key;
 }
 
@@ -370,18 +370,18 @@ sub encode_entities {
     $content=~s/&/&amp;/g; # has to be done first
     $content=~s/</&lt;/g;
     $content=~s/>/&gt;/g;
-    
+
     return $content;
 }
 
 =head2 default_values
-    
+
 Define some sane defaults as per Text::Markup::Base
 
 =cut
 
 sub default_values {
-    
+
     return {
         links => {},
         encoding => 'utf-8',

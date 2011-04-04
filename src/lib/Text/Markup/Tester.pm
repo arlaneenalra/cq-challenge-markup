@@ -47,25 +47,25 @@ sub run_test {
     $test=~s/.*\///;
 
     $path.="/$test";
-    
-    
+
+
     # construct a new instance of everything to make sure 
     # various portions of the tests do not interactive with 
     # each other in negative or positive manners
     my $tokenizer=Text::Markup::Tokenizer->new();
     my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
     my $backend=Text::Markup::Backend::XML->new();
-    
+
     my $xml=&slurp("$path.xml");
     my $source=&slurp("$path.txt");
-    
+
     # parse the source tree
     my $tree=$parser->parse($source);
-    
+
     # call our back end handler to convert 
     # to the simple xml format
     my $output=$backend->string($tree);
-    
+
     # a naive approach to checking output
     ok($output eq $xml, "$test - Chcking Output");
 }
