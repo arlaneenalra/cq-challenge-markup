@@ -15,7 +15,7 @@ use Text::Markup::Backend::XML;
 use Text::Markup::Backend::HTML;
 use Text::Markup::Util qw/slurp/;
 
-use Test::Simple tests => 1;
+use Test::More;
 
 my %ext_map=(
 'xml' => 'Text::Markup::Backend::XML',
@@ -66,12 +66,16 @@ sub run_test {
     # parse the source tree
     my $tree=$parser->parse($source);
 
+    my $count=0;
+
     foreach my $ext (keys %ext_map) {
       my $file=$path . '.' . $ext;
       if(-e $file) {
+        $count++;
         run_ext_test($tree, $file, $ext_map{$ext});
       }
     }
+    done_testing($count);
 }
 
 
