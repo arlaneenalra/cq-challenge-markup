@@ -84,8 +84,6 @@ my (@filenames)=parse_args(\@ARGV,{
 eval "require $formatter;"
   or croak "Unable to load $formatter due to $@";
 
-my $backend=$formatter->new();
-
 ## use critic
 
 if(@filenames <= 1) { # process a single file or STDIN
@@ -93,7 +91,7 @@ if(@filenames <= 1) { # process a single file or STDIN
 
   my $source=$file ? slurp($file) : slurp(\*STDIN);
 
-  my $string=format_file($source, $backend);
+  my ($extension, $string)=format_file($source, $formatter);
 
   output_file($string, $output);
 
@@ -110,9 +108,9 @@ if(@filenames <= 1) { # process a single file or STDIN
     # strip file extension
     my $output=$filename;
     $output=~s/\.[^.]*$//;
-    $output=$output . '.' . $backend->extension();
 
-    my $string=format_file($source, $backend);
+    my ($extension, $string)=format_file($source, $formatter);
+    $output=$output . '.' . $extension;
     output_file($string, $output);
   }
 }
@@ -147,8 +145,9 @@ sub output_file {
 
 # process a single file
 sub format_file {
-  my ($source, $backend)=@_;
+  my ($source, $formatter)=@_;
 
+  my $backend=$formatter->new();
   my $tokenizer=Text::Markup::Tokenizer->new(links => !$no_links);
   my $parser=Text::Markup::Parser->new(tokenizer => $tokenizer);
 
@@ -156,7 +155,7 @@ sub format_file {
   my $tree=$parser->parse($source);
 
   # render output using the selected backend
-  return $backend->string($tree);
+  return ($backend->extension, $backend->string($tree));
 
 }
 

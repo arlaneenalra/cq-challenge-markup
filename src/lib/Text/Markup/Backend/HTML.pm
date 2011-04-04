@@ -7,7 +7,7 @@ use base 'Text::Markup::Base';
 
 use Carp;
 
-use fields qw/encoding lang resources links stack/;
+use fields qw/encoding lang resources links stack notes/;
 
 # list of tags we should call start_<tag> on
 my %html_tag = map { $_ => 1 } qw/ol ul li blockquote p h1 h2 h3 h4 h5 h6 pre i b body/;
@@ -17,6 +17,7 @@ my %special_tag=(
                  'link' => \&process_link,
                  'key' => \&process_key,
                  'link_def' => \&process_link_def,
+                 'note' => \&process_note,
                 );
 
 
@@ -164,7 +165,25 @@ Output ending tag and footers for html tags
 sub end_document {
   my ($self)=@_;
 
-  return ('</html>');
+  my @tags=('</html>');
+
+  # deal with foot notes
+  if(@{$self->{notes}}) {
+    my @inner;
+
+    foreach my $ref (@{$self->{notes}}) {
+      push @inner, @{$ref};
+    }
+
+    @tags=(
+           $self->render_html_tag(1, 'div', { 'class' => 'notes'}),
+           @inner,
+           $self->render_html_tag(0, 'div'),
+           @tags,
+          );
+  }
+
+  return @tags;
 }
 
 
@@ -265,6 +284,65 @@ sub process_link_def {
 
   # link_def nodes never render content
   return ();
+}
+
+=head2 process_note
+
+Push the body of a note onto the list of note tags so that it can
+later be rendered at the bottom of the document with a link and anchor
+to it.
+
+=cut
+
+sub process_note {
+  my ($self, $tree)=@_;
+
+  # figure out a footnot anchor name
+  my $count=scalar(@{$self->{notes}})+1;
+  my $anchor="footnote$count";
+
+  my @tags=$self->process_tags($tree, 0);
+
+  # some fun stuff to get the anchors inside the first tag
+  my @anchor_tags=(
+                   $self->render_html_tag(1, 'a', {'name' => $anchor}),
+                   $self->render_html_tag(0, 'a'),
+                   $self->render_html_tag(1, 'a', {'href' => '#' . $anchor}),
+                   $count,
+                   $self->render_html_tag(0, 'a'),
+                  );
+
+  # only try this if the first tag is a p
+  if($tags[0] eq '<p>') {
+    my $first=shift @tags;
+    unshift @tags, (
+                    $first,
+                    @anchor_tags
+                   );
+    @tags=(
+           $self->render_tag(1, $tree),
+           @tags,
+           $self->render_tag(0, $tree),
+          );
+  } else {
+    @tags=(
+           $self->render_tag(1, $tree),
+           @anchor_tags,
+           @tags,
+           $self->render_tag(0, $tree),
+          );
+  }
+
+  # add these tags to the notes
+  push @{$self->{notes}}, \@tags;
+
+  return (
+          $self->render_html_tag(1, 'a', { 'href' => '#' . $anchor }),
+          $self->render_html_tag(1, 'sup'),
+          $count,
+          $self->render_html_tag(0, 'sup'),
+          $self->render_html_tag(0, 'a'),
+         )
 }
 
 =head2 process_key
@@ -400,6 +478,7 @@ sub default_values {
           encoding => 'utf-8',
           lang => 'en',
           stack => [],
+          notes => [],
          };
 }
 
