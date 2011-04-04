@@ -8,14 +8,14 @@ use base 'Text::Markup::Base';
 
 =head1 NAME
 
-Text::Markup::Tree - Stores the parse tree 
+Text::Markup::Tree - Stores the parse tree
 
 =head1 SYNOPSIS
 
-Text::Markup::Tree nodes serve a dual purpose as state variables and the basis of 
+Text::Markup::Tree nodes serve a dual purpose as state variables and the basis of
 a simple AST.  When dealing with a Text::Markup::Tree object, outside of the parser,
-only the name, verbatim, inline, subdocument and body members have any 
-significance. 
+only the name, verbatim, inline, subdocument and body members have any
+significance.
 
 =cut
 
@@ -99,7 +99,7 @@ sub default_values {
 
 Meanings and uses for some of the public accessible fields.
 
-=head2 name 
+=head2 name
 
 Name for the enclosing block defined by this tree node.
 
@@ -109,12 +109,12 @@ Indicates the current level of indentation in.
 
 =head2 verbatim
 
-If this is set to true it indiciates that the content of this node 
+If this is set to true it indiciates that the content of this node
 should be treated as pure text only.  (There are no child nodes.)
 
 =head2 inline
 
-If this is set to true, the indicated tag is treated as an inline tag 
+If this is set to true, the indicated tag is treated as an inline tag
 in the output.
 
 =head2 subdocument

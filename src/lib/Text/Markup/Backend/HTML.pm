@@ -9,7 +9,7 @@ use Carp;
 
 use fields qw/encoding lang resources links stack/;
 
-# list of tags we should call start_<tag> on 
+# list of tags we should call start_<tag> on
 my %html_tag = map { $_ => 1 } qw/ol ul li blockquote p h1 h2 h3 h4 h5 h6 pre i b body/;
 
 # list of tags that require special processing
@@ -41,7 +41,7 @@ sub string {
 
     my $string='';
 
-    # convert the array of strings returned by string_internal into 
+    # convert the array of strings returned by string_internal into
     # a single string
     foreach my $token ($self->string_internal($tree)) {
 
@@ -170,7 +170,7 @@ sub render_tag {
     my @tags;
     my $call='';
 
-    # do we have an html tag or do we have 
+    # do we have an html tag or do we have
     # something else?
     if($html_tag{$name}) {
         push @tags, $self->render_html_tag($start_end, $name);
@@ -179,8 +179,8 @@ sub render_tag {
 
         # treat inline tags as span and others as div
         push @tags, $self->render_html_tag(
-            $start_end, 
-            $tree->inline() ? 'span':'div', 
+            $start_end,
+            $tree->inline() ? 'span':'div',
             {'class' => $name});
     }
 
@@ -188,7 +188,7 @@ sub render_tag {
     # document level stuff
     if($name eq 'body') {
 
-        # postion wrapping tags correctly for 
+        # postion wrapping tags correctly for
         # start or end
         if($start_end) {
             @tags=($self->start_document(), @tags);
@@ -200,7 +200,7 @@ sub render_tag {
     return @tags;
 }
 
-=head2 render_html_tag 
+=head2 render_html_tag
 
 Generate an html start or end tag with the given class.
 
@@ -218,10 +218,10 @@ sub render_html_tag {
 
     # check for and process attributes
     if($attributes_ref) {
-        # convert attibute hash into 
+        # convert attibute hash into
         # a string of attributes
         $attributes=' ' . join ' ', map {
-            $_ . '="' 
+            $_ . '="'
                 . $self->encode_entities($attributes_ref->{$_})
                 . '"';
         } keys %{$attributes_ref};
@@ -267,7 +267,7 @@ sub process_key {
     # key nodes are assumed to have a pure text body.
     my $key=$self->make_link_key($tree);
 
-    # add the key node to our link hash, 
+    # add the key node to our link hash,
     # a link_def will latter look it up and attach a value to it.
     $self->links->{$key}='';
 
@@ -295,7 +295,7 @@ sub process_link {
     push @{$self->stack}, ['LINK', ''];
 
     # process the body of the node into tags
-    my @tags=$self->process_tags($tree);    
+    my @tags=$self->process_tags($tree);
 
     # get rid of our flagging token
     my $ref = pop @{$self->stack};
@@ -308,7 +308,7 @@ sub process_link {
         $key=$ref->[1];
     } else {
 
-        # treat all of the tags we found as the key.  
+        # treat all of the tags we found as the key.
         # this is crude but should work for most cases.
         $key=$self->make_link_key($tree);
     }
@@ -328,8 +328,8 @@ sub process_link {
 
     # add the link start callback and ending tag
     @tags= (
-        $link_start, 
-        @tags, 
+        $link_start,
+        @tags,
         $self->render_html_tag(0, 'a')
         );
 
@@ -338,7 +338,7 @@ sub process_link {
 
 =head2 make_link_key
 
-Converts an array of string values into a scalar key value for looking up 
+Converts an array of string values into a scalar key value for looking up
 links in a case insensitive manner.
 
 =cut

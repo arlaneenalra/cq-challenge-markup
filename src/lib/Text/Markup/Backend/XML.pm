@@ -15,7 +15,7 @@ Text::Markup::Backend::XML - Produces simple XML output from a Text::Markup::Tre
 =head1 SYNOPSIS
 
 This module takes in a Text::Markup::Tree instance and returns a string which contains
-a simple xml representation of the tree.  Tree nodes are walked in a recursive 
+a simple xml representation of the tree.  Tree nodes are walked in a recursive
 manner with each node representing a separate arbitrary element in the xml
 document.
 
@@ -41,11 +41,11 @@ sub string {
     # we need to add an extra newline for subdocuments
     if($tree->subdocument) {
         $string.=$/;
-        $indent_val-=1; # remove the extraneous indent added 
+        $indent_val-=1; # remove the extraneous indent added
     }
 
 
-    # construct an indent block 
+    # construct an indent block
     my $indent= ' ' x (4 * $indent_val);
 
     # don't apply indentation to inline nodes

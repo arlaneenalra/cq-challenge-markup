@@ -22,14 +22,14 @@ binmode STDOUT, ':encoding(utf8)';
 
 =head1 NAME
 
-markup.pl - Tool to convert text written using Text::Markup into a simple 
+markup.pl - Tool to convert text written using Text::Markup into a simple
 xml document.
 
 =head1 USAGE
 
 markup.pl [--no-links] [filename] [-o outputfile] [-f formatter]
 
-If no filename is provided, markup.pl will expect to receive input via stdin 
+If no filename is provided, markup.pl will expect to receive input via stdin
 and send output to stdout.
 
 =over
@@ -39,8 +39,8 @@ and send output to stdout.
 =back
 
 
-=head2 --no-links 
-    
+=head2 --no-links
+
 Turns off link processing for the given document.
 
 =head2 filename
@@ -49,14 +49,14 @@ Input filename, if left blank the processor looks to stdin.
 
 =head2 -o outputfile
 
-The output file to write to.  If no file is provided, the script 
+The output file to write to.  If no file is provided, the script
 outputs to stdout.
 
 =head2 -f formatter
 
-Output formatting module to be used.  This defaults to Text::Markup::Backend::XML 
+Output formatting module to be used.  This defaults to Text::Markup::Backend::XML
 and should be provided as a fully qualified pacakge name.  The module in question
-must provide a method named string which accepts a Markup::Tree as its single 
+must provide a method named string which accepts a Markup::Tree as its single
 argument and returns a scalar containing rendered output.
 
 =cut
@@ -69,7 +69,7 @@ my ($filename)=parse_args(\@ARGV,{
     '--no-links' => {
         'accepts' => 0,
         'var' => \$no_links},
-	
+
     '-o' => {
         'accepts' => 1,
         'var' => \$output},
@@ -92,7 +92,7 @@ eval "require $formatter;"
 
 my $backend=$formatter->new();
 
-# Do we have a file on the command line or should we be 
+# Do we have a file on the command line or should we be
 # looking for a stream?
 my $source=$filename ? slurp($filename) : slurp(\*STDIN);
 
@@ -106,13 +106,13 @@ my $string=$backend->string($tree);
 if($output) {
     open my $fh_output, '>', $output
         or croak "Unable to open output file $@";
-    
+
     binmode $fh_output, ':encoding(utf8)';
-    
+
     print $fh_output $string;
 
     close $fh_output;
-    
+
 } else {
     # use STDOUT
     print $string;

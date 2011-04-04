@@ -12,7 +12,7 @@ Text::Markup::Base - Base class for Text::Markup components.
 
 =head1 SYNOPSIS
 
-This class provides a simple construct which checks/sets a known list of 
+This class provides a simple construct which checks/sets a known list of
 arguments.  A subclass may override B<required_args> to change the list of
 valid arguments.
 
@@ -24,7 +24,7 @@ valid arguments.
 
 Calling new creates an instance of the derrived class, attempts to verify
 that all required parameters have been defined as arguments, and applies
-given default values to remaining parameters.  
+given default values to remaining parameters.
 
 =cut
 
@@ -85,7 +85,7 @@ sub reset {
 
 =head2 required_args
 
-Default implementation of required_args which requires nothing.  Sub-Classes should 
+Default implementation of required_args which requires nothing.  Sub-Classes should
 implement their own version whih returns an array of argument names.
 
 =cut
@@ -106,7 +106,7 @@ sub default_values {
 
 =head2 AUTOLOAD
 
-Catch undefined method calls to automagically create accessors for our 
+Catch undefined method calls to automagically create accessors for our
 defined fields.
 
 =cut
@@ -122,7 +122,7 @@ sub AUTOLOAD : lvalue {
     my $name=$AUTOLOAD;
     $name=~s/^.*:://;
 
-    # turn off strict so we can 
+    # turn off strict so we can
     {
         no strict 'refs';
         *$AUTOLOAD=sub : lvalue {

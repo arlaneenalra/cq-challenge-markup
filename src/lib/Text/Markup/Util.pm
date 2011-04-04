@@ -21,7 +21,7 @@ This is a catch all module for functions that are used in several locations.
 our @EXPORT_OK= qw/slurp parse_args/;
 
 
-=head1 FUNCTIONS 
+=head1 FUNCTIONS
 
 =head2 slurp
 
@@ -32,7 +32,7 @@ Takes in a file handle and slurps its entire contents into a scalar.
 sub slurp {
     my ($file)=@_;
 
-    local $/=undef; # set the end of line marker to undef 
+    local $/=undef; # set the end of line marker to undef
 
     # If we were passed a file handle, slurp it and return
     # otherwise, we treat our argument as a filename.
@@ -55,12 +55,12 @@ sub slurp {
 
 =head2 parse_args
 
-Convert the arguments array into a set of scalars we can use for 
+Convert the arguments array into a set of scalars we can use for
 configuration choices.  Unmatched, defined arguments are returned.
 Parameters may be defined to accept one or no arguments.  If a given
 parameter accepts one argument, its value is treated as true or false.
-If a given parameter is defined as accepting one argument, the value 
-immediately following that parameter in the argument array is assumed 
+If a given parameter is defined as accepting one argument, the value
+immediately following that parameter in the argument array is assumed
 to be the argument.  Matched parameters have no defined order.
 
 Example:
@@ -101,7 +101,7 @@ sub parse_args {
 
 =head2 parse_param
 
-Look for an argument that accepts a single parameter, return that 
+Look for an argument that accepts a single parameter, return that
 parameter and remove the parameter, flag from the argument array
 
 =cut
@@ -112,10 +112,10 @@ sub parse_param {
     # look for the argument
     my ( $index )=grep {
         $args_ref->[$_] and
-            $args_ref->[$_] eq $param 
+            $args_ref->[$_] eq $param
     } 0..$#{$args_ref};
 
-    # if this parameter does not accept an argument, we 
+    # if this parameter does not accept an argument, we
     # just need to know if it was in the list
     if(!$accepts) {
 

@@ -7,13 +7,13 @@ use fields qw/links/;
 
 use base 'Text::Markup::Base';
 
-# Definition of the various tokens 
+# Definition of the various tokens
 my @token_patterns=(
     [qr/-\*-.*-\*-/ => 'EMACS_MODE'], # Match this so we can ignore it
 
     [qr/\*\** / => 'HEADER_TAG'], # Matches '*' which is used to indicate a header
 
-    [qr/   */ => 'INDENT'], # Matches 2 or more leading spaces 
+    [qr/   */ => 'INDENT'], # Matches 2 or more leading spaces
 
     [qr/\\/ => 'ESCAPE'], # Match the escape character
     [qr/{/ => 'TAG_BLOCK_START'], # Match the start of the a tag block
@@ -37,7 +37,7 @@ my @token_patterns=(
 my @token_patterns_no_links=grep { $_->[1]!~/^LINK/ } @token_patterns;
 
 # list tokens that may only appear after certain other tokens
-# +ANY+ means it must follow a token and +DELETE+ means, to 
+# +ANY+ means it must follow a token and +DELETE+ means, to
 # remove the token rather than converting it to a text token
 my %token_rules=(
     'HEADER_TAG' => [qw/+UNDEF+ INDENT END_OF_LINE END_OF_PARAGRAPH/],
@@ -60,7 +60,7 @@ Text::Markup::Tokenizer - Takes a string and returns an array of tokens
 
 Tokenizer works in a manner akin to a lex based lexer.  An string passed in
 is converted into an array of token, matched text pairs which can then be feed
-to the parser and converted into an AST. 
+to the parser and converted into an AST.
 
 =over
 
@@ -78,7 +78,7 @@ processing of links.  The default configuration will process links normally.
 
 =head2 tokenize($content)
 
-Takes in a scalar representing content and returns a string of tokens 
+Takes in a scalar representing content and returns a string of tokens
 which can then be used to provide structure to our content.
 
 =cut
@@ -106,7 +106,7 @@ sub tokenize {
         if($token_rules{$token}) {
 
             # look for any matching rules
-            $match=grep { 
+            $match=grep {
 
                 (defined($last_token) and
                     ($last_token eq $_ or $_ eq '+ANY+'))
@@ -195,7 +195,7 @@ sub next_token {
 
 Setup sane defaults.
 
-=cut 
+=cut
 
 sub default_values {
 
@@ -211,6 +211,6 @@ sub default_values {
 If this is set to true then links will be processed normally.  When set to false,
 link characters have no special meaning.
 
-=cut 
+=cut
 
 1;
